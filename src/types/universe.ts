@@ -1,0 +1,41 @@
+import * as THREE from 'three';
+import type { Sketch, AnyElement, ElementData } from './index';
+import type React from 'react';
+
+export interface UniverseContext {
+  handleCloseModal: () => void;
+  addTextToScene: (scene: THREE.Scene, elementData: ElementData, drawingStarted?: boolean) => THREE.Group;
+  isPointInsideCube: (point: THREE.Vector3, cubePoint: THREE.Vector3) => boolean;
+  addCubeToCartesianSpace: (e: any, mouseRef: any, cameraRef: any, sceneRef: any, raycasterRef: any, planeCubesRef: any) => void;
+  handleEditing: () => void;
+  handleCreativityOnSpace: (data: any, sceneRef: any, elementsStackRef: any, cartesianSpaceRef: any, addElement: any, skipHistory: boolean, pushHistory: any) => any;
+  identifyFace: (e: any, scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => void;
+  moveCamera: (direction: 'left' | 'right' | 'up' | 'down' | 'forward' | 'backward', amount?: number) => void;
+  rotateCamera: (deltaX: number, deltaY: number) => void;
+  addNewCube: () => void;
+  addText: () => void;
+  handleDraw: () => void;
+  handleCartesianSpaceDraw: () => void;
+  handleFunctionsControls: () => void;
+  handleSpaceClean: () => void;
+  handleInfo: () => void;
+  updateElementPosition: (clientX: number, clientY: number, lockAxis: boolean) => void;
+  stopDragging: () => void;
+  handleCreativity: () => void;
+  handleElementRotation: (tx: number, ty: number) => void;
+  stopRotation: () => void;
+  handleStopAll: () => void;
+  handleElementsSelection: () => void;
+  handleElementResize: (scale: number) => void;
+  stopResize: () => void;
+  handleMountains: () => void;
+  handleSavedScenes: () => void;
+  updateSketch: () => Promise<Sketch>;
+  handleCalculator: () => void;
+  handleMarkPosition: () => void;
+  handleRuler: () => void;
+  notify: (message: string, type: 'info' | 'success' | 'warning' | 'error' | 'neutral', options?: any) => void;
+  setUiHidden: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsDrawing: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsWriting: React.Dispatch<React.SetStateAction<boolean>>;
+}

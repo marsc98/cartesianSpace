@@ -1,0 +1,48 @@
+{
+  "name": "cartesian-space",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "build": "node --experimental-strip-types scripts/generate-wasm-hash.ts && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "deploy": "azion deploy && azion create storage object --bucket-name 'espaco-cartesiano-20251127061934' --object-key '20251130194540/wasm/trace_opt.wasm' --source './.edge/assets/wasm/trace_opt.wasm'",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx"
+  },
+  "dependencies": {
+    "@stomp/stompjs": "^7.0.1",
+    "dompurify": "^3.3.3",
+    "mathjs": "^14.3.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "socket.io-client": "^4.8.0",
+    "sockjs-client": "^1.6.1",
+    "three": "^0.174.0"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.183.1",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/ui": "^4.1.2",
+    "eslint": "^10.1.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "fake-indexeddb": "^6.2.5",
+    "jsdom": "^29.0.1",
+    "sass": "^1.78.0",
+    "scss": "^0.2.4",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3",
+    "vite-plugin-wasm": "^3.6.0",
+    "vitest": "^4.1.2"
+  }
+}

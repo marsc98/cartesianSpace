@@ -1,0 +1,30 @@
+{
+  "glyphs": {
+    "A": {
+      "x_min": 0,
+      "x_max": 100,
+      "y_min": 0,
+      "y_max": 100,
+      "path": "M0 0 L100 100 Z"
+    },
+    "B": {
+      "x_min": 0,
+      "x_max": 100,
+      "y_min": 0,
+      "y_max": 100,
+      "path": "M0 0 L100 0 L100 100 L0 100 Z"
+    },
+    "C": {
+      "x_min": 0,
+      "x_max": 100,
+      "y_min": 0,
+      "y_max": 100,
+      "path": "M100 0 L0 0 L0 100 L100 100"
+    }
+  },
+  "familyName": "ExampleFont",
+  "ascender": 1000,
+  "descender": -200,
+  "underlinePosition": -100,
+  "underlineThickness": 50
+}

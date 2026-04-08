@@ -1,0 +1,344 @@
+@use "sass:color";
+
+// Variáveis
+$display-bg: #b2c2ba;
+$display-border: #8a9a92;
+$display-text: #1a3a2e;
+$display-result: #065f46;
+$error-color: #991b1b;
+$color-primary: #667eea;
+$color-secondary: #764ba2;
+$color-success: #10b981;
+$color-danger: #ef4444;
+$color-warning: #f59e0b;
+$color-purple: #9333ea;
+
+// Container principal
+.physics-calculator-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// Card da calculadora
+.calculator-card {
+  border-radius: 15px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  width: 100%;
+  padding: 15px;
+}
+
+// Título
+.calculator-title {
+  text-align: center;
+  color: #ffffff;
+  margin-bottom: 24px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+// Seção de visualização
+.visualization-section {
+  border: 1px solid #5f6c82;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.visualization-title {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.visualization-canvas {
+  border-radius: 8px;
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid #5f6c82;
+}
+
+.moving-object {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #fbbf24;
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.6);
+  transition: all 0.1s linear;
+}
+
+.empty-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+// Seção de controles
+.controls-section {
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.movements-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.btn-active {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+  transform: scale(0.98);
+}
+
+.btn-stop {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.control-group {
+  margin: 26px 0;
+
+  &:last-child {
+    margin: 0;
+  }
+
+  &:first-child {
+    margin-top: 16px;
+  }
+}
+
+.control-label {
+  color: #ffffff;
+  font-size: 14px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.control-value {
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+.range-input {
+  width: 100%;
+  height: 6px;
+  background: #1a1f2e;
+  border-radius: 3px;
+  -webkit-appearance: none;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: $color-primary;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: color.adjust($color-primary, $lightness: -10%);
+    }
+  }
+
+  &::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: $color-primary;
+    cursor: pointer;
+    border-radius: 50%;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: color.adjust($color-primary, $lightness: -10%);
+    }
+  }
+
+  &:disabled::-webkit-slider-thumb {
+    cursor: not-allowed;
+  }
+
+  &:disabled::-moz-range-thumb {
+    cursor: not-allowed;
+  }
+}
+
+// Display - Frame externo
+.display-frame {
+  width: 100%;
+
+  border-radius: 12px;
+  padding: 6px;
+  margin-bottom: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+
+  display: flex;
+  align-items: center;
+
+  gap: 0.2rem;
+}
+
+.display-label {
+  display: flex;
+
+  font-size: 16px;
+  font-weight: 600;
+}
+
+// Display - Tela interna
+.display-screen {
+  width: 100%;
+
+  padding: 0.4rem;
+
+  border-radius: 8px;
+  border: 1px solid #5f6c82;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+}
+
+// Input do display
+.display-input {
+  background-color: $display-bg;
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: right;
+  border: none;
+  color: $display-text;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.05em;
+  caret-color: $display-text;
+
+  &::selection {
+    background: rgba(26, 58, 46, 0.3);
+  }
+}
+
+// Resultado do display
+.display-result {
+  font-size: 16px;
+  text-align: right;
+  min-height: 22px;
+  color: $display-result;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.2);
+
+  &.error {
+    color: $error-color;
+  }
+}
+
+// Informações de fórmulas
+.formula-info {
+  border: 1px dotted #5f6c82;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 16px;
+}
+
+.formula-title {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.formula-item {
+  color: #d1d5db;
+  font-size: 13px;
+  margin-bottom: 8px;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+.formula-label {
+  color: $color-primary;
+  font-weight: 600;
+}
+
+.formula-description {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 2px;
+  margin-left: 4px;
+}
+
+.variables-info {
+  color: #9ca3af;
+  font-size: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #374151;
+}
+
+// Responsividade
+@media (max-width: 480px) {
+  .physics-calculator-container {
+    padding: 12px;
+  }
+
+  .calculator-card {
+    padding: 20px;
+  }
+
+  .calculator-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  .visualization-canvas {
+    height: 150px;
+  }
+
+  .display-input {
+    font-size: 18px;
+  }
+
+  .display-result {
+    font-size: 14px;
+  }
+
+  .control-label {
+    font-size: 13px;
+  }
+
+  .formula-info {
+    padding: 10px;
+  }
+
+  .formula-item {
+    font-size: 12px;
+  }
+
+  .variables-info {
+    font-size: 11px;
+  }
+}

@@ -1,0 +1,60 @@
+@use "../../../utils/styles/vars" as *;
+
+.select-container {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+
+  .select-label {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .select {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    appearance: none; // Remove o estilo padrão do navegador
+    background-color: transparent;
+    position: relative;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.8rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem; // Espaço para a seta
+    cursor: pointer;
+
+    font-weight: 500!important;
+
+    // Efeito de profundidade
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+    &:focus-visible {
+      border-color: #4a90e2;
+      box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+    }
+
+    &:hover {
+      border-color: #bbb;
+    }
+
+    // Estilo para opções
+    option {
+      padding: 0.4rem;
+      color: $black;
+    }
+
+    // Estilo para quando estiver desabilitado
+    &:disabled {
+      background-color: #f5f5f5;
+      color: #999;
+      cursor: not-allowed;
+    }
+  }
+}
+

@@ -1,0 +1,129 @@
+@use "../../../utils/styles/vars" as *;
+
+.modal_container {
+  z-index: 1000000;
+  position: fixed;
+  min-width: 200px;
+
+  padding: 1.2rem 1rem;
+  border-radius: 1rem;
+  background-color: $sky-gray;
+  box-shadow:
+    0 25px 25px -5px rgba(0, 0, 0, 0.3),
+    0 -25px 25px -5px rgba(0, 0, 0, 0.3),
+    -25px 0 25px -5px rgba(0, 0, 0, 0.3),
+    25px 0 25px -5px rgba(0, 0, 0, 0.3);
+
+  border: 1px solid #374151;
+
+  color: transparent;
+
+  &[data-is-closing='false'] {
+    animation: scaleIn 0.3s ease-out forwards;
+  }
+
+  &[data-is-closing='true'] {
+    animation: scaleOut 0.3s ease-out forwards;
+  }
+
+  .modal_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 1rem;
+
+    cursor: default;
+
+    gap: 1rem;
+
+    .modal-title {
+      color: $text-color;
+      font-size: 2rem;
+      font-weight: 600;
+
+      @media (max-width: 768px) {
+        font-size: 1.5rem;
+      }
+    }
+
+    .modal-interactors {
+      display: flex;
+
+      gap: 0.8rem;
+    }
+  }
+
+  .modal-content-wrapper {
+    position: relative;
+    overflow: visible;
+    width: 100%;
+  }
+
+  .modal-content {
+    display: flex;
+    padding: 0.8rem;
+    cursor: default;
+
+    width: 100%;
+
+    @media (max-width: 768px) {
+      padding: 0.1rem;
+    }
+
+    &.card {
+      &[data-is-closing='false'] {
+        animation: scaleIn 0.3s ease-out forwards;
+      }
+
+      &[data-is-closing='true'] {
+        animation: scaleOut 0.3s ease-out forwards;
+      }
+    }
+
+    &.transitioning {
+      pointer-events: none;
+    }
+  }
+}
+
+@keyframes scaleIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.button-container {
+  display: grid;
+  grid-template-columns: auto 5rem;
+  gap: 1rem;
+  margin-top: 1rem;
+
+  &[data-icon='true'] {
+    grid-template-columns: 2rem auto 5rem;
+  }
+}
+
+@keyframes scaleOut {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  30% {
+    transform: scale(0.7);
+    opacity: 0.7;
+  }
+  70% {
+    transform: scale(0.3);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0.1);
+    opacity: 0;
+  }
+}

@@ -1,0 +1,22 @@
+<svg id="svg-editor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" fill="#e3e3e3" stroke="#e3e3e3" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Ponto de origem (centro) -->
+    <circle cx="50" cy="450" r="24" fill="#e3e3e3"/>
+    
+    <!-- Eixo X (horizontal) -->
+    <line x1="50" y1="450" x2="400" y2="450" stroke-width="48"/>
+    
+    <!-- Eixo Y (vertical) -->
+    <line x1="50" y1="450" x2="50" y2="100" stroke-width="48"/>
+    
+    <!-- Eixo Z (diagonal) -->
+    <line x1="50" y1="450" x2="300" y2="200" stroke-width="48"/>
+    
+    <!-- Seta X -->
+    <polygon points="420,450 380,430 380,470" fill="#e3e3e3"/>
+    
+    <!-- Seta Y -->
+    <polygon points="50,80 30,120 70,120" fill="#e3e3e3"/>
+    
+    <!-- Seta Z -->
+    <polygon points="323.75,193.3984375 265.75,219.3984375 293,160" fill="#e3e3e3" transform="rotate(180,305,188)" class=""/>
+</svg>

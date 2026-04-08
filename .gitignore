@@ -1,0 +1,34 @@
+# deps
+node_modules/
+.pnp*
+.yarn/install-state.gz
+
+# build
+dist/
+build/
+coverage/
+
+# env
+.env*
+
+# azion / edge
+azion.config.cjs
+azion/
+.edge/
+
+# vite temp
+vite.config.js.timestamp-*.mjs
+.vite/
+
+# src/lib (gerado)
+src/lib/
+
+# wasm build artifacts (gerado pelo cargo build)
+wasm/target/
+public/wasm/
+
+# docs (interno)
+docs/
+
+# misc
+.DS_Store

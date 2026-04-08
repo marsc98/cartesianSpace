@@ -1,0 +1,307 @@
+// CommandsReference.module.scss
+@use "../../../utils/styles/vars" as *;
+
+.tutorials-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  padding: 1rem 0;
+  justify-items: center;
+}
+
+
+.commands-reference-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  border-radius: 12px;
+  color: #ffffff;
+
+  .header {
+    text-align: center;
+    margin-bottom: 24px;
+
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+  }
+
+  .tabs-container {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+
+    &::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #2a2a2a;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #4a4a4a;
+      border-radius: 2px;
+    }
+
+    .tab-button {
+      flex-shrink: 0;
+      padding: 10px 20px;
+      background: #2a2a2a;
+      border: none;
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #3a3a3a;
+      }
+
+      &.active {
+        background: #4a90e2;
+        color: #ffffff;
+      }
+    }
+  }
+
+  .table-container {
+    overflow-x: auto;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    cursor: grab;
+    box-shadow:
+      0 10px 15px -3px rgba(0, 0, 0, 0.3),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    &:active {
+      cursor: grabbing;
+    }
+
+    &::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #4a4a4a;
+      border-radius: 3px;
+    }
+
+    .commands-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+
+      thead {
+        background: #333333;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+
+        th {
+          padding: 12px 16px;
+          text-align: left;
+          font-weight: 600;
+          font-size: 14px;
+          color: #ffffff;
+          border-bottom: 2px solid #4a4a4a;
+
+          &:first-child {
+            width: 30%;
+          }
+        }
+      }
+
+      tbody {
+        tr {
+          border-bottom: 1px solid #3a3a3a;
+          transition: background 0.2s ease;
+
+          &:hover {
+            background: #333333;
+          }
+
+          &:last-child {
+            border-bottom: none;
+          }
+        }
+
+        td {
+          padding: 12px 16px;
+          font-size: 14px;
+          color: #e0e0e0;
+
+          &.command-key {
+            kbd {
+              display: inline-block;
+              padding: 4px 8px;
+              background: #1a1a1a;
+              border: 1px solid #4a4a4a;
+              border-radius: 4px;
+              font-size: 13px;
+              font-weight: 600;
+              color: #4a90e2;
+              box-shadow: 0 2px 0 #0a0a0a;
+            }
+          }
+
+          &.command-description {
+            color: #cccccc;
+            line-height: 1.5;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            .description-text {
+              display: inline;
+
+              @media (max-width: 768px) {
+                font-size: 12px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0;
+
+    .pagination-button {
+      padding: 8px 16px;
+      background: #2a2a2a;
+      border: 1px solid #4a4a4a;
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background: #3a3a3a;
+        border-color: #4a90e2;
+      }
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+    }
+
+    .pagination-info {
+      font-size: 14px;
+      color: #cccccc;
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 16px;
+
+    .header h2 {
+      font-size: 20px;
+    }
+
+    .tabs-container {
+      gap: 6px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+
+      .tab-button {
+        padding: 8px 16px;
+        font-size: 13px;
+      }
+    }
+
+    .table-container {
+      .commands-table {
+        min-width: 100%;
+        display: block;
+
+        thead {
+          display: none;
+        }
+
+        tbody {
+          display: block;
+
+          tr {
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            border-bottom: none;
+
+            &:hover {
+              background: #333333;
+            }
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+
+          td {
+            display: block;
+            padding: 0;
+            width: 100%;
+
+            &.command-key {
+              margin-bottom: 8px;
+
+              kbd {
+                font-size: 14px;
+                padding: 6px 12px;
+              }
+            }
+
+            &.command-description {
+              display: flex;
+              align-items: flex-start;
+              padding-left: 0;
+
+              .arrow {
+                display: inline-block;
+                flex-shrink: 0;
+                margin-right: 8px;
+                margin-top: 2px;
+                font-size: 16px;
+              }
+
+              .description-text {
+                display: block;
+                flex: 1;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .pagination-container {
+      gap: 12px;
+
+      .pagination-button {
+        width: 100%;
+      }
+    }
+  }
+}

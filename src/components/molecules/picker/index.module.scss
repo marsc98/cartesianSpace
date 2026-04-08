@@ -1,0 +1,108 @@
+@use "../../../utils/styles/vars" as *;
+
+.picker_container {
+  position: absolute;
+
+  &[data-position="1"] {
+    top: 1rem;
+    left: 1rem;
+  }
+
+  &[data-position="2"] {
+    top: 1rem;
+    right: 1rem;
+  }
+
+  &[data-position="3"] {
+    bottom: 1rem;
+    left: 1rem;
+  }
+
+  &[data-position="4"] {
+    bottom: 1rem;
+    right: 1rem;
+  }
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  &[data-position="1"], &[data-position="2"] {
+    flex-direction: column-reverse; 
+  }
+
+  gap: 0.5rem;
+
+  .item_container {
+    &[data-sample="false"] {
+      width: 1.2rem;
+      height: 1.2rem;
+    }
+
+    display: grid;
+    align-items: center;
+    justify-items: center;
+
+    gap: .5rem;
+
+    border-radius: 50%;
+
+    &[data-position="1"], &[data-position="2"] {
+      grid-template-areas: 'arrow'
+                           'picked';
+    }
+
+    &[data-position="4"], &[data-position="3"] {
+      grid-template-areas: 'picked'
+                           'arrow';
+    }
+
+    &[data-has-image="false"] {
+      &[data-selected="true"],
+      &:hover {
+        border: #ffff 2px solid;
+      }
+    }
+
+    &[data-has-image="true"] {
+      opacity: .8;
+
+      &[data-selected="true"],
+      &:hover {
+        opacity: 1;
+      }
+    }
+
+    .arrow {
+      transition: 1s ease-in-out;
+      
+      grid-area: arrow;
+      
+      &[data-position="1"], &[data-position="2"] {
+        transform: rotate(90deg);
+        &[data-active="true"] {
+          transform: rotate(-90deg);
+        }
+      }
+
+      &[data-position="3"], &[data-position="4"] {
+        transform: rotate(-90deg);
+        &[data-active="true"] {
+          transform: rotate(90deg);
+        }
+      }
+    }
+
+    .color_container {
+      width: 1.2rem;
+      height: 1.2rem;
+
+      border-radius: 50%;
+
+      grid-area: picked;
+
+      border: #ffff 2px solid;
+    }
+  }
+}

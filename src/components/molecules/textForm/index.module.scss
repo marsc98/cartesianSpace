@@ -1,0 +1,79 @@
+@use "../../../utils/styles/vars" as *;
+
+.text-form_container {
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+
+  gap: 1rem;
+
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .text-form-text-container {
+    width: 100%;
+    height: 100%;
+    
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+
+    .text-form-text-area {
+      width: 100%;
+      height: 100%;
+
+      font-size: 1.1rem;
+
+      padding: .5rem;
+      
+      resize: none;
+
+      padding: 10px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      transition: all 0.3s ease-in-out;
+
+      background-color: transparent;
+
+      &:focus-visible {
+        border-color: #3498db;
+        box-shadow: 0 0 8px rgba(52, 152, 219, 0.6);
+        transform: scale(1.02);
+        /* Pequeno efeito de crescimento */
+      }
+    }
+  }
+
+  .text-form-items {
+    display: flex;
+    flex-direction: column;
+    gap: .8rem;
+
+      .select-container {
+        grid-area: select;
+      }
+
+      .color-picker {
+        grid-area: colorPicker;
+      }
+  }
+
+  .text-form-label {
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  .font-config-container {
+    width: 100%;
+    display: flex;
+    gap: .5rem;
+
+    grid-area: fontConfig;
+  }
+
+
+
+}

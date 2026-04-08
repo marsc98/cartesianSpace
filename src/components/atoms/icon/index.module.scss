@@ -1,0 +1,16 @@
+
+.icon {
+  width: 1rem;
+
+  &[data-size="p"] {
+    width: 2rem;
+  }
+
+  &[data-size="m"] {
+    width: 3rem;
+  }
+
+  &[data-size="g"] {
+    width: 4rem;
+  }
+}

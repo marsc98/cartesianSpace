@@ -1,0 +1,8 @@
+.download-form-container {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  gap: 2rem;
+  align-items: center;
+  justify-items: center;
+}

@@ -1,0 +1,240 @@
+@use "../../../utils/styles/vars" as *;
+
+$shadow-color: rgba(0, 0, 0, 0.3);
+
+.color-grid-modal {
+  // Container principal
+  &__container {
+    padding: 20px;
+  }
+
+  // Canvas wrapper
+  &__canvas-wrapper {
+    position: relative;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+  }
+
+  &__canvas {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: crosshair;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &__keyboard-color {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  &__color-input {
+    width: 36px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid #374151;
+    border-radius: 4px;
+    cursor: pointer;
+    background: transparent;
+  }
+
+  // Lupa
+  &__zoom {
+    position: absolute;
+    pointer-events: none;
+    z-index: 10;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  // Seção de cores comuns no popup
+  &__common-colors-section {
+    margin-bottom: 20px;
+  }
+
+  &__section-label {
+    display: block;
+    margin-bottom: 0.9rem;
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  // Cores comuns
+  &__common-colors {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+  }
+
+  &__color-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+
+    &:hover {
+      transform: scale(1.1);
+      border-color: #666;
+    }
+
+    &--selected {
+      border-color: #007bff !important;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.3);
+    }
+  }
+
+  // Seção de opacidade
+  &__opacity-section {
+    margin-bottom: 20px;
+  }
+
+  &__opacity-label {
+    display: block;
+    margin-bottom: 0.9rem;
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  &__opacity-slider-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__opacity-min,
+  &__opacity-max {
+    font-size: 12px;
+    color: #666;
+    min-width: 30px;
+  }
+
+  &__opacity-slider {
+    flex: 1;
+    height: 6px;
+    background: linear-gradient(to right, transparent 0%, #000 100%);
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+
+    &::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #007bff;
+      cursor: pointer;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    &::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #007bff;
+      cursor: pointer;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  &__color-display {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 1rem;
+    justify-content: flex-start;
+
+    box-shadow:
+      0 10px 15px -3px rgba(0, 0, 0, 0.3),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #374151;
+  }
+
+  &__color-swatch-wrapper {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+  }
+
+  &__checkerboard {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+      linear-gradient(45deg, #ccc 25%, transparent 25%),
+      linear-gradient(-45deg, #ccc 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #ccc 75%),
+      linear-gradient(-45deg, transparent 75%, #ccc 75%);
+    background-size: 8px 8px;
+    background-position:
+      0 0,
+      0 4px,
+      4px -4px,
+      -4px 0px;
+  }
+
+  &__color-swatch {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  &__color-info {
+    flex: 1;
+  }
+
+  &__color-label {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  &__color-value {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 8px 12px;
+    width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.6rem;
+  }
+}
+
+// Responsividade
+@media (max-width: 640px) {
+  .color-grid-modal {
+    &__canvas {
+      max-width: 100%;
+      height: auto;
+    }
+
+    &__common-colors {
+      grid-template-columns: repeat(9, 1fr);
+    }
+
+    &__color-circle {
+      width: 28px;
+      height: 28px;
+    }
+  }
+}

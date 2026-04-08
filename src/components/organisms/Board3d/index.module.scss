@@ -1,0 +1,146 @@
+.canvas {
+  height: 100vh !important;
+}
+
+.button {
+  background-color: #070713;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+.info-button {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  border: none;
+  text-align: center;
+  cursor: pointer;
+
+  opacity: 0.6;
+
+  &[data-active="true"] {
+    opacity: 1;
+  }
+}
+
+.axis-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  border: none;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0.6;
+
+  &[data-active="true"] {
+    opacity: 1;
+  }
+}
+
+.range-input-container {
+  position: absolute;
+  border: none;
+  cursor: pointer;
+  width: 180px;
+
+  align-self: flex-end;
+
+  left: calc(100% - 7.5rem);
+  top: 15rem;
+
+  rotate: 270deg;
+  gap: .8rem;
+
+  // @media screen and (max-width: 768px) {
+  //   flex-direction: column;
+
+  //   right: -4.3rem;
+  //   top: 15rem;
+
+  //   rotate: 270deg;
+
+  // }
+}
+
+.functions-controls-button {
+  position: absolute;
+  top: 1rem;
+  right: 5rem;
+  border: none;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0.6;
+
+  &[data-active="true"] {
+    opacity: 1;
+  }
+}
+
+.mountains-button {
+  position: absolute;
+  bottom: 1rem;
+  right: 6rem;
+  border: none;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0.6;
+
+  &[data-active="true"] {
+    opacity: 1;
+  }
+}
+
+.axis2d-button {
+  position: absolute;
+  top: 5rem;
+  right: 1rem;
+  border: none;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0.6;
+
+  &[data-active="true"] {
+    opacity: 1;
+  }
+}
+
+.config-button {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  border: none;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0.6;
+
+  &[data-active="true"] {
+    opacity: 1;
+  }
+}
+
+.note-button {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  border: none;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0.6;
+
+  &[data-active="true"] {
+    opacity: 1;
+  }
+}
+
+.joystick {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+}

@@ -1,0 +1,27 @@
+.carousel-item {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  border-radius: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.3),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  background: #1f2937;
+}
+
+.carousel-item-image {
+  min-height: 50px;
+  pointer-events: none;
+}
+
+.carousel-item-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #e5e7eb;
+  pointer-events: none;
+}

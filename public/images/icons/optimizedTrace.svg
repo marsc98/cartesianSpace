@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Corpo do lápis -->
+  <polygon
+    points="12,52 16,56 54,18 50,14"
+    fill="#f0c040"
+    stroke="#c89a10"
+    stroke-width="1.5"
+    stroke-linejoin="round"
+  />
+  <!-- Ponta (madeira) -->
+  <polygon
+    points="8,56 12,52 16,56 12,60"
+    fill="#d4a87a"
+    stroke="#a0724a"
+    stroke-width="1.5"
+    stroke-linejoin="round"
+  />
+  <!-- Grafite -->
+  <polygon
+    points="10,58 12,56 14,58 12,60"
+    fill="#555"
+    stroke="#333"
+    stroke-width="1"
+    stroke-linejoin="round"
+  />
+  <!-- Borracha -->
+  <polygon
+    points="50,14 54,18 58,14 54,10"
+    fill="#f08080"
+    stroke="#c05050"
+    stroke-width="1.5"
+    stroke-linejoin="round"
+  />
+  <!-- Anel da borracha -->
+  <line x1="50" y1="14" x2="54" y2="10" stroke="#888" stroke-width="2"/>
+  <!-- Linha de detalhe no corpo -->
+  <line x1="14" y1="54" x2="52" y2="16" stroke="#c89a10" stroke-width="1" opacity="0.5"/>
+</svg>

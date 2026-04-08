@@ -1,0 +1,58 @@
+@use "./utils/styles/vars" as *;
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+//FULL RESET
+* {
+  margin: 0;
+  padding: 0;
+
+  scroll-behavior: smooth;  
+  color: $text-color;
+}
+
+html, body {
+  line-height: 1;
+
+  font-family: "Space Grotesk", sans-serif;
+  text-decoration-skip-ink: auto;
+
+  font-smoothing: antialiased;
+  webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-display: swap;
+
+  overflow: hidden;
+
+  background-color: $background-color;
+
+}
+
+button, input {
+  background-color: transparent;
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+
+  font-family: "Space Grotesk", sans-serif;
+}
+
+ul, ol {
+  margin: 0;
+  list-style: none;
+}
+
+:focus-visible {
+  outline: 2px solid #1f7fcd;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

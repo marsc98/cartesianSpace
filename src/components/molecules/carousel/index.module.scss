@@ -1,0 +1,126 @@
+$shadow-color: rgba(0, 0, 0, 0.3);
+
+.carousel-wrapper {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.carousel-title {
+  color: #e5e7eb;
+  word-break: break-all;
+  margin: 0;
+  text-align: center;
+  white-space: pre-wrap;
+}
+
+.carousel-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  position: relative;
+  width: 100%;
+}
+
+.nav-button-left,
+.nav-button-right {
+  width: 80px;
+  height: 100%;
+  position: relative;
+  z-index: 20;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.nav-button-left {
+  justify-content: flex-start;
+  padding-left: 10px;
+}
+
+.nav-button-right {
+  justify-content: flex-end;
+  padding-right: 10px;
+}
+
+.nav-button-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-viewport {
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  touch-action: none;
+  perspective: 1000px;
+  z-index: 10;
+  cursor: grab;
+
+  &.dragging {
+    cursor: grabbing;
+  }
+
+  &.list-mode {
+    cursor: default;
+  }
+}
+
+.gradient-left {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 120px;
+  height: 100%;
+  background: linear-gradient(to right, #1f2937 0%, rgba(31, 41, 55, 0) 100%);
+  z-index: 995;
+  pointer-events: none;
+}
+
+.gradient-right {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 120px;
+  height: 100%;
+  background: linear-gradient(to left, #1f2937 0%, rgba(31, 41, 55, 0) 100%);
+  z-index: 995;
+  pointer-events: none;
+}
+
+.items-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.list-layout {
+    justify-content: flex-start;
+  }
+}
+
+.carousel-item-wrapper {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+
+.custom-button-wrapper {
+  margin-top: 1rem;
+
+  padding: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

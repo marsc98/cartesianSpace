@@ -1,0 +1,43 @@
+.terrain-list {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+}
+
+.terrain-item {
+  width: 110px;
+  height: 110px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  text-align: center;
+  font-weight: bold;
+  transition: transform 0.2s, outline 0.2s;
+  outline: 2px solid transparent;
+
+  gap: .5rem;
+
+  margin: .56rem;
+
+  .terrain-img {
+    width: 100%;
+    height: 100%;
+  }
+
+  .terrain-name {
+    align-self: center;
+  }
+}
+
+.terrain-item:hover {
+  transform: scale(1.05);
+}
+
+.selected {
+  outline: 3px solid #fff700;
+}
+

@@ -1,0 +1,26 @@
+.icon-button-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &[data-active="false"] {
+      opacity: 0.8;
+    }
+
+  .icon-button {
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+
+    &.disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+}

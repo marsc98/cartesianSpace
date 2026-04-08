@@ -1,0 +1,25 @@
+@use "../../../utils/styles/vars" as *;
+
+.pencil-loader {
+  width: 30px;
+  aspect-ratio: 1;
+  border: 6px solid #ddddddc9;
+  border-radius: 50%;
+  position: relative;
+  transform: rotate(45deg);
+}
+.pencil-loader::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 6px solid $orange;
+  animation: l18 1.4s infinite linear;
+}
+@keyframes l18 {
+    0%   {clip-path:polygon(50% 50%,0 0,0    0,0    0   ,0    0   ,0    0   )}
+    25%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 0   ,100% 0   ,100% 0   )}
+    50%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,100% 100%,100% 100%)}
+    75%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,0    100%,0    100%)}
+    100% {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,0    100%,0    0   )}
+}

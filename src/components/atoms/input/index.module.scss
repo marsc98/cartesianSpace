@@ -1,0 +1,47 @@
+@use "../../../utils/styles/vars" as *;
+
+.input-container {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  gap: .7rem;
+  align-items: flex-start;
+  justify-content: center;
+
+  &:focus-visible {
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+  }
+
+  &::placeholder {
+    color: #999;
+  }
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(96, 96, 96, 0.1); /* Sombra suave */
+    border-color: #d4d4d4;
+  }
+
+  .input-label {
+    font-size: 1.1rem;
+    color: $text-color;
+    font-weight: 500;
+  }
+
+  .input {
+    width: 100%;
+    height: 35px;
+    border-radius: 4px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #374151;
+
+    padding: 0.8rem;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+    width: 100%;
+    color: $text-color;
+
+  }
+
+}

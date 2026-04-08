@@ -1,0 +1,102 @@
+.helpers-list-container {
+  position: absolute;
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  /* =============================================
+   * POSICIONAMENTO COMPLETO (baseado na tabela)
+   * Formato: [vertical][horizontal][display]
+   * - Vertical: t (top), b (bottom)
+   * - Horizontal: l (left), r (right)
+   * - Display: r (row), c (column)
+   * Exemplo: tlr = top + left + row
+   * ============================================ */
+
+  // TOP + LEFT
+  &.tlr {  // top-left-row
+    top: .3rem;
+    left: .3rem;
+    flex-direction: row;
+  }
+  &.tlc {  // top-left-column
+    top: .3rem;
+    left: .3rem;
+    flex-direction: column;
+  }
+
+  // TOP + RIGHT
+  &.trr {  // top-right-row
+    top: .3rem;
+    right: .3rem;
+    flex-direction: row;
+  }
+  &.trc {  // top-right-column
+    top: .3rem;
+    right: .3rem;
+    flex-direction: column;
+  }
+
+  // BOTTOM + LEFT
+  &.blr {  // bottom-left-row
+    bottom: .3rem;
+    left: .3rem;
+    flex-direction: row;
+    transition: clip-path 0.3s ease 0.1s;
+    clip-path: inset(0 0% 0 0);
+
+    &[data-open="false"] {
+      clip-path: inset(0 100% 0 0);
+    }
+  }
+  &.blc {  // bottom-left-column
+    bottom: .3rem;
+    left: .3rem;
+    flex-direction: column;
+    transition: clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    clip-path: inset(0 0 0 0);
+
+    &[data-open="false"] {
+      clip-path: inset(calc(100% - 3.5rem) 0 0 0);
+    }
+  }
+
+  // BOTTOM + RIGHT
+  &.brr {  // bottom-right-row
+    bottom: .3rem;
+    right: .3rem;
+    flex-direction: row;
+  }
+
+  &.brc {  // bottom-right-column
+    bottom: .3rem;
+    right: .3rem;
+    flex-direction: column;
+  }
+
+  .helper-item {
+    opacity: 0.6;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+
+    &[data-active="true"] {
+      opacity: 1;
+      font-weight: bold;
+    }
+
+    &:hover {
+      transform: scale(1.1);
+    }
+
+    &[data-list-open="true"] {
+      transform: rotate(45deg);
+    }
+
+    &[data-open="false"] {
+      pointer-events: none;
+    }
+  }
+}
