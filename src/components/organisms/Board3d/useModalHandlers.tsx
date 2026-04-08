@@ -342,7 +342,7 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
     addModal({
       id,
       isOpen: true,
-      title: 'Posições',
+      title: 'Marcadores',
       content: (
         <MarkersList
           isAdding={isAdding}

@@ -6,6 +6,7 @@ import { useCamera } from '../../../hooks/contexts/CameraContext';
 import { useScene } from '../../../hooks/contexts/SceneContext';
 import { useSession } from '../../../hooks/contexts/SessionContext';
 import type { NotificationData } from '../../../hooks/useNotifications';
+import css from './index.module.scss';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -124,7 +125,7 @@ export function ToolsManager({
 
       {/* ── Controle de velocidade da câmera ──────────────────────────────── */}
       <div
-        className="range-input-container"
+        className={css['range-input-container']}
         style={{ right: !isMobile ? window?.innerWidth / 2 : undefined }}
         title="Velocidade"
       >

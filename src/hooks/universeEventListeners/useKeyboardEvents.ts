@@ -102,7 +102,7 @@ export const useKeyboardEvents = (ctx: UniverseContext, {
           !controlsRef.current.controlPressed
         )
           handleInfo();
-        if (e.key === 'p' || e.key === 'P') handleMarkPosition();
+        if (e.key === 'p' || e.key === 'P') handleMountains();
         if (e.key === 'c' || e.key === 'C') {
           if (!controlsRef.current.controlPressed) {
             handleCalculator();
@@ -119,7 +119,7 @@ export const useKeyboardEvents = (ctx: UniverseContext, {
           }
           handleSavedScenes();
         }
-        if (e.key === 'm' || e.key === 'M') handleMountains();
+        if (e.key === 'm' || e.key === 'M') handleMarkPosition();
       }
     },
     [
