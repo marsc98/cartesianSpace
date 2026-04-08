@@ -36,6 +36,7 @@ export interface ToolsManagerProps {
   notification: NotificationData | null;
   navigatorRenderFnRef: React.MutableRefObject<(() => void) | null>;
   onResetCamera: () => void;
+  isLoading: boolean;
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -61,6 +62,7 @@ export function ToolsManager({
   notification,
   navigatorRenderFnRef,
   onResetCamera,
+  isLoading,
 }: ToolsManagerProps) {
   const { isMobile } = useSession();
   const { cameraRef, speedRefectorRef } = useCamera();
@@ -140,7 +142,7 @@ export function ToolsManager({
       </div>
 
       {/* ── Gizmo de navegação (WebGL scissor no renderer principal) ─────── */}
-      {!notification && (
+      {!notification && !isLoading && (
         <UniverseNavigator
           isMobile={isMobile}
           mainCamera={cameraRef.current}

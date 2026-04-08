@@ -1,0 +1,140 @@
+$axis-x: #ff4444;
+$axis-y: #44ee44;
+$axis-z: #4499ff;
+$center: #dddddd;
+$gizmo-size: 4rem;
+
+// ── Keyframes ────────────────────────────────────────────────────────────────
+
+@keyframes spinLever {
+  0%   { transform: rotate3d(0.707, 0.707, 0, 0deg); }
+  80%  { transform: rotate3d(0.707, 0.707, 0, 360deg); }
+  90%  { transform: rotate3d(0.707, 0.707, 0, 375deg); }
+  95%  { transform: rotate3d(0.707, 0.707, 0, 355deg); }
+  100% { transform: rotate3d(0.707, 0.707, 0, 360deg); }
+}
+
+@keyframes floatIdle {
+  0%, 100% { transform: translate(-50%, -50%) scale(2.5) translateY(0); }
+  50%       { transform: translate(-50%, -50%) scale(2.5) translateY(-6px); }
+}
+
+// ── Wrapper (position fixa, centralizado, perspectiva para filhos) ────────────
+
+.loaderWrapper {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 100;
+  pointer-events: none;
+  perspective: 300px;
+  animation: floatIdle 3s ease-in-out infinite;
+
+  &.exiting {
+    animation: none;
+    transform: translate(var(--target-x, -50%), var(--target-y, -50%)) scale(1);
+    opacity: 0;
+    transition:
+      transform 0.7s cubic-bezier(0.34, 1.15, 0.64, 1),
+      opacity 0.2s ease 0.6s;
+  }
+}
+
+// ── Grupo de eixos (a cena 3D que gira) ──────────────────────────────────────
+
+.axesGroup {
+  position: relative;
+  width: $gizmo-size;
+  height: $gizmo-size;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transform-style: preserve-3d;
+  animation: spinLever 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+// ── Esfera central ───────────────────────────────────────────────────────────
+
+.sphere {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.29rem;
+  height: 0.29rem;
+  margin: -0.15rem 0 0 -0.15rem;
+  border-radius: 50%;
+  background: $center;
+  transform-style: preserve-3d;
+}
+
+// ── Container de cada eixo (ponto de origem no centro do gizmo) ──────────────
+// Todas as partes do eixo são posicionadas absolutas relativas a este ponto 0×0.
+// O eixo padrão (Y) aponta para cima (top negativo = acima da origem em tela).
+
+.axis {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+
+  // Ponta cônica: clip-path dá triângulo com vértice no topo
+  .cone {
+    position: absolute;
+    width: 0.47rem;
+    height: 0.47rem;
+    left: -0.23rem;
+    top: -2.07rem; // -(1.83 + 0.23) rem: escala 4/6 de -3.1rem
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  }
+
+  // Haste positiva: de 0 a 1.6rem acima da origem
+  .shaftPos {
+    position: absolute;
+    width: 0.19rem;
+    height: 1.6rem;
+    left: -0.09rem;
+    top: -1.6rem; // centro em -0.8rem, height 1.6rem → top = -1.6rem
+    border-radius: 0.09rem;
+  }
+
+  // Haste negativa: de 0 a 0.93rem abaixo da origem
+  .shaftNeg {
+    position: absolute;
+    width: 0.13rem;
+    height: 0.93rem;
+    left: -0.07rem;
+    top: 0;
+    border-radius: 0.07rem;
+    opacity: 0.3;
+  }
+}
+
+// ── Eixo X (vermelho) — rotação +90° em Z: acima → direita ──────────────────
+
+.axisX {
+  transform: rotateZ(90deg);
+
+  .cone     { background: $axis-x; }
+  .shaftPos { background: $axis-x; }
+  .shaftNeg { background: $axis-x; }
+}
+
+// ── Eixo Y (verde) — sem rotação extra: padrão aponta para cima ──────────────
+
+.axisY {
+  .cone     { background: $axis-y; }
+  .shaftPos { background: $axis-y; }
+  .shaftNeg { background: $axis-y; }
+}
+
+// ── Eixo Z (azul) — rotação -90° em X: acima → em direção ao viewer ──────────
+
+.axisZ {
+  transform: rotateX(-90deg);
+
+  .cone     { background: $axis-z; }
+  .shaftPos { background: $axis-z; }
+  .shaftNeg { background: $axis-z; }
+}

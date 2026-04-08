@@ -16,6 +16,8 @@ interface SceneRendererProps {
   navigatorRenderFnRef: React.MutableRefObject<(() => void) | null>;
   /** Fn opcional para inércia do acelerômetro */
   accelerometerRenderFnRef: React.MutableRefObject<(() => void) | null>;
+  /** Chamada uma única vez após o primeiro frame renderizado */
+  onSceneReady?: () => void;
 }
 
 /**
@@ -30,6 +32,7 @@ export function SceneRenderer({
   animationFrameRef,
   navigatorRenderFnRef,
   accelerometerRenderFnRef,
+  onSceneReady,
 }: SceneRendererProps) {
   const { sceneRef, rendererRef, elementsStackRef, needsRenderRef } = useScene();
   const { cameraRef, raycasterRef } = useCamera();
@@ -67,6 +70,7 @@ export function SceneRenderer({
     createRealisticStarfield(sceneRef, elementsStackRef as any);
 
     // ── Animation loop ─────────────────────────────────────────────────────
+    let sceneReadyFired = false;
     const animate = () => {
       animationFrameRef.current = requestAnimationFrame(animate);
       // Acelerômetro ativo: sempre precisa renderizar para refletir rotação da câmera
@@ -81,6 +85,11 @@ export function SceneRenderer({
       navigatorRenderFnRef.current?.();
       // Inércia do acelerômetro
       accelerometerRenderFnRef.current?.();
+      // Notifica que a cena está pronta após o primeiro frame renderizado
+      if (!sceneReadyFired) {
+        sceneReadyFired = true;
+        onSceneReady?.();
+      }
     };
     animate();
 

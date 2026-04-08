@@ -42,6 +42,9 @@ import { safeGetItem } from '../../../utils/storage';
 import { useSceneActions } from './useSceneActions';
 import { useModalHandlers } from './useModalHandlers';
 
+// ── Componentes ───────────────────────────────────────────────────────────
+import { AppLoader } from '../../molecules/appLoader';
+
 // ── Constantes de módulo ──────────────────────────────────────────────────
 // Array estável — fora do componente para que useEditingModeManager não re-execute o useEffect a cada render.
 const EDITING_MODES = [
@@ -98,6 +101,8 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
   const { notify, notification } = useNotifications();
 
   // ── Local state ───────────────────────────────────────────────────────────
+  const [isLoading, setIsLoading] = useState(true);
+  const [isExiting, setIsExiting] = useState(false);
   const [uiHidden, setUiHidden] = useState(false);
   const [isWriting, setIsWriting] = useState(false);
   const [activeTutorial, setActiveTutorial] = useState<string | null>(null);
@@ -140,6 +145,12 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
     document.body.style.cursor = isOwnCursorActive ? 'none' : 'default';
     return () => { document.body.style.cursor = 'default'; };
   }, [isOwnCursorActive, pencilIsActive]);
+
+  // ── Loader ────────────────────────────────────────────────────────────────
+  const handleSceneReady = useCallback(() => {
+    setIsExiting(true);
+    setTimeout(() => setIsLoading(false), 900);
+  }, []);
 
   // ── useSceneActions ───────────────────────────────────────────────────────
   const scene = useSceneActions({ setRulerIsActive, rulerIsActive });
@@ -366,6 +377,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
         animationFrameRef={animationFrameRef}
         navigatorRenderFnRef={navigatorRenderFnRef}
         accelerometerRenderFnRef={accelerometerRenderFnRef}
+        onSceneReady={handleSceneReady}
       />
 
       {/* Device orientation / acelerômetro */}
@@ -395,6 +407,11 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
         onCloseTutorial={() => setActiveTutorial(null)}
       />
 
+      {/* Loader animado de eixos XYZ — visível durante inicialização da cena */}
+      {isLoading && (
+        <AppLoader isExiting={isExiting} isMobile={isMobile} />
+      )}
+
       {/* Toolbars, controle de velocidade e gizmo de navegação */}
       {!uiHidden && (
         <ToolsManager
@@ -409,6 +426,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
           notification={notification}
           navigatorRenderFnRef={navigatorRenderFnRef}
           onResetCamera={() => cameraRef.current?.position.set(-2, -1, 4)}
+          isLoading={isLoading}
         />
       )}
     </main>
