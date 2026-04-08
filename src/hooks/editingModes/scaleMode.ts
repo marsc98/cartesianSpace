@@ -16,8 +16,9 @@ export const scaleMode: EditingMode = {
   update() {},
 
   exit(ctx) {
-    const { editingInteractorRef, lastIntersected, originalColor } = ctx;
+    const { editingInteractorRef, lastIntersected, originalColor, setEditingInteractorIsActive } = ctx;
     editingInteractorRef.current.active = false;
+    setEditingInteractorIsActive?.(false);
     if (lastIntersected.current?.material && originalColor.current) {
       lastIntersected.current.material.color.copy(originalColor.current);
     }

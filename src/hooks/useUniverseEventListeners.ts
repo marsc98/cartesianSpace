@@ -64,6 +64,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
     setUiHidden,
     setIsDrawing,
     setIsWriting,
+    setEditingInteractorIsActive,
   } = ctx;
   const {
     setLinePoints, awaitingSecondClick, setAwaitingSecondClick, linePoints,
@@ -167,7 +168,9 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
     particleRef,
     addElement,
     cartesianSpaceRef,
-    handleCreativityOnSpace
+    handleCreativityOnSpace,
+    needsRenderRef,
+    setEditingInteractorIsActive,
   });
 
   const { handleWheel, handleCameraDrag } = useCameraEvents(ctx, { controlsRef });

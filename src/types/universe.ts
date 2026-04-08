@@ -38,4 +38,5 @@ export interface UniverseContext {
   setUiHidden: React.Dispatch<React.SetStateAction<boolean>>;
   setIsDrawing: React.Dispatch<React.SetStateAction<boolean>>;
   setIsWriting: React.Dispatch<React.SetStateAction<boolean>>;
+  setEditingInteractorIsActive: (active: boolean) => void;
 }

@@ -20,8 +20,9 @@ export const repositionMode: EditingMode = {
   update() {},
 
   exit(ctx) {
-    const { editingInteractorRef, editingArrowsRef } = ctx;
+    const { editingInteractorRef, editingArrowsRef, setEditingInteractorIsActive } = ctx;
     editingInteractorRef.current.active = false;
+    setEditingInteractorIsActive?.(false);
     editingArrowsRef?.current?.remove();
   },
 };

@@ -17,9 +17,10 @@ export const rotationMode: EditingMode = {
   update() {},
 
   exit(ctx) {
-    const { rotationRef, editingInteractorRef, lastIntersected, originalColor } = ctx;
+    const { rotationRef, editingInteractorRef, lastIntersected, originalColor, setEditingInteractorIsActive } = ctx;
     rotationRef.current.active = false;
     editingInteractorRef.current.active = false;
+    setEditingInteractorIsActive?.(false);
     if (lastIntersected.current?.material && originalColor.current) {
       lastIntersected.current.material.color.copy(originalColor.current);
     }

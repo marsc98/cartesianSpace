@@ -16,6 +16,8 @@ export const useHistoryEvents = ({
   addElement,
   cartesianSpaceRef,
   handleCreativityOnSpace,
+  needsRenderRef,
+  setEditingInteractorIsActive,
 }: any) => {
   const MAX_HISTORY = 7;
 
@@ -48,9 +50,11 @@ export const useHistoryEvents = ({
       pushHistory(command);
       disposeMultipleObjects(sceneRef, elementsStackRef, particleId);
       deleteElementsById(particleId);
+      setEditingInteractorIsActive?.(false);
+      needsRenderRef.current = true;
       notify('delete', 'warning', { duration: 1200, style: 'ghost' });
     },
-    [elements, pushHistory, sceneRef, elementsStackRef, deleteElementsById, notify],
+    [elements, pushHistory, sceneRef, elementsStackRef, deleteElementsById, notify, needsRenderRef, setEditingInteractorIsActive],
   );
 
   const replayTrace = useCallback(
@@ -114,6 +118,8 @@ export const useHistoryEvents = ({
 
 
     future.push(command);
+    setEditingInteractorIsActive?.(false);
+    needsRenderRef.current = true;
     setHistorySize({ past: historyRef.current.past.length, future: historyRef.current.future.length });
   }, [
     historyRef,
@@ -125,6 +131,8 @@ export const useHistoryEvents = ({
     replayTrace,
     setHistorySize,
     handleCreativityOnSpace,
+    needsRenderRef,
+    setEditingInteractorIsActive,
   ]);
 
   const redo = useCallback(() => {
@@ -156,6 +164,7 @@ export const useHistoryEvents = ({
     }
 
     past.push(command);
+    needsRenderRef.current = true;
     setHistorySize({ past: historyRef.current.past.length, future: historyRef.current.future.length });
   }, [
     historyRef,
@@ -167,6 +176,7 @@ export const useHistoryEvents = ({
     replayTrace,
     setHistorySize,
     handleCreativityOnSpace,
+    needsRenderRef,
   ]);
 
   return { pushHistory, deleteElement, replayTrace, undo, redo };

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { useScene } from '../../../hooks/contexts/SceneContext';
 
 /**
  * Option B — Gizmo de navegação usando o renderer principal via scissor/viewport.
@@ -14,6 +15,7 @@ export default function UniverseNavigator({
   onClick,
 }) {
   const containerRef = useRef();
+  const { needsRenderRef } = useScene();
 
   useEffect(() => {
     if (!mainCamera || !mainRenderer || !renderFnRef) return;
@@ -75,6 +77,8 @@ export default function UniverseNavigator({
       ),
     );
 
+    needsRenderRef.current = true;
+
     renderFnRef.current = () => {
       const renderer = mainRenderer.current;
       const container = containerRef.current;
@@ -107,6 +111,7 @@ export default function UniverseNavigator({
 
     return () => {
       renderFnRef.current = null;
+      needsRenderRef.current = true;
       scene.traverse((obj) => {
         if (obj.isMesh) {
           obj.geometry.dispose();

@@ -3,6 +3,7 @@ import css from './index.module.scss';
 import IconButton from '../iconButton';
 import Button from '../../atoms/button';
 import { useSketch } from '../../../hooks/useSketch';
+import { useScene } from '../../../hooks/contexts/SceneContext';
 import type * as THREE from 'three';
 import type { EditingInteractorState, CameraControls } from '../../../types';
 
@@ -62,6 +63,7 @@ const EditingInteractor = ({
   const dragStartPosition = useRef({ top: 0, left: 0 });
 
   const { updateElementById } = useSketch();
+  const { needsRenderRef } = useScene();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -253,9 +255,10 @@ const EditingInteractor = ({
               if (editingArrowsRef.current) editingArrowsRef.current.updatePosition(lastIntersected.current);
               if (isReposition) {
                 lastIntersected.current.parent.position.x += (deltaX * (speedRefectorRef.current * 0.0001));
-                break;
+              } else {
+                lastIntersected.current.parent.scale.x = scaleX;
               }
-              lastIntersected.current.parent.scale.x = scaleX;
+              needsRenderRef.current = true;
             }
             break;
           }
@@ -265,9 +268,10 @@ const EditingInteractor = ({
               if (isReposition) {
                 lastIntersected.current.parent.position.y += (deltaY * (speedRefectorRef.current * 0.0001));
                 if (editingArrowsRef.current) editingArrowsRef.current.updatePosition(lastIntersected.current);
-                break;
+              } else {
+                lastIntersected.current.parent.scale.y = scaleY;
               }
-              lastIntersected.current.parent.scale.y = scaleY;
+              needsRenderRef.current = true;
             }
             break;
           }
@@ -277,9 +281,10 @@ const EditingInteractor = ({
               if (isReposition) {
                 lastIntersected.current.parent.position.z -= (deltaX * (speedRefectorRef.current * 0.0001));
                 if (editingArrowsRef.current) editingArrowsRef.current.updatePosition(lastIntersected.current);
-                break;
+              } else {
+                lastIntersected.current.parent.scale.z = scaleZ;
               }
-              lastIntersected.current.parent.scale.z = scaleZ;
+              needsRenderRef.current = true;
             }
             break;
           }
@@ -305,6 +310,7 @@ const EditingInteractor = ({
       if (lastIntersected?.current?.parent?.rotation) {
         lastIntersected.current.parent.rotation.y += deltaX * 0.01;
         lastIntersected.current.parent.rotation.x += deltaY * 0.01;
+        needsRenderRef.current = true;
       }
 
       mouseStartPos.current = { x: mouseX, y: mouseY };
@@ -368,6 +374,7 @@ const EditingInteractor = ({
         if (lastIntersected?.current?.parent?.rotation) {
           lastIntersected.current.parent.rotation.y += deltaX * 0.01;
           lastIntersected.current.parent.rotation.x += deltaY * 0.01;
+          needsRenderRef.current = true;
         }
 
         mouseStartPos.current = { x: touchX, y: touchY };

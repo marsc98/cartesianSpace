@@ -271,24 +271,26 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
     setUiHidden,
     setIsDrawing,
     setIsWriting,
+    setEditingInteractorIsActive,
   });
 
   // Sincroniza deleteElementRef após cada render (sem useEffect — refs não são efeito colateral)
   deleteElementRef.current = deleteElement;
 
+  // TODO: simplificar interação via websocket
   // ── WebSocket ─────────────────────────────────────────────────────────────
-  useWebSocket(
-    `${import.meta.env.VITE_API_URL}/ws?id=${socketId}`,
-    socketId,
-    (x: number, y: number, z: number) => {
-      setIsOwnCursorActive(true);
-      setCoordinates({ x, y, z });
-    },
-    {
-      onConnect: () => console.log('WebSocket conectado'),
-      onDisconnect: () => console.log('WebSocket desconectado'),
-    },
-  );
+  // useWebSocket(
+  //   `${import.meta.env.VITE_API_URL}/ws?id=${socketId}`,
+  //   socketId,
+  //   (x: number, y: number, z: number) => {
+  //     setIsOwnCursorActive(true);
+  //     setCoordinates({ x, y, z });
+  //   },
+  //   {
+  //     onConnect: () => console.log('WebSocket conectado'),
+  //     onDisconnect: () => console.log('WebSocket desconectado'),
+  //   },
+  // );
 
   // ── activeModalFormIds ────────────────────────────────────────────────────
   // Set de formIds ativos — dependência única e estável para os useMemos de helpers.
@@ -299,7 +301,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
 
   // ── Helper lists ──────────────────────────────────────────────────────────
   const bottomRightHelpers = useMemo(() => [
-    { iconName: 'mountains', hoverText: 'Planos (m)', onClick: modalHandlers.handleMountains, active: activeModalFormIds.has('planes-form'), visible: true },
+    { iconName: 'mountains', hoverText: 'Planos (p)', onClick: modalHandlers.handleMountains, active: activeModalFormIds.has('planes-form'), visible: true },
     { iconName: 'uploadFile', hoverText: 'Adicionar imagem', onClick: modalHandlers.addImage, active: activeModalFormIds.has('text-form'), visible: true },
     { iconName: 'blackBoard', hoverText: 'Lousa', onClick: modalHandlers.handleBlackBoard, active: boardIsActive, visible: true },
     { iconName: 'note', hoverText: 'Adicionar Texto (t)', onClick: modalHandlers.addText, active: activeModalFormIds.has('text-form'), visible: true },
@@ -332,7 +334,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
 
   const sceneHelpers = useMemo(() => [
     { iconName: 'bookmark', hoverText: 'Salvos (s)', onClick: modalHandlers.handleSavedScenes, active: activeModalFormIds.has('saved-scenes-form'), visible: true },
-    { iconName: 'markers', hoverText: 'Marcador (m)', onClick: modalHandlers.handleMarkPosition, active: activeModalFormIds.has('marked-points-form'), visible: true },
+    { iconName: 'markers', hoverText: 'Marcadores (m)', onClick: modalHandlers.handleMarkPosition, active: activeModalFormIds.has('marked-points-form'), visible: true },
   ], [modalHandlers, activeModalFormIds]);
 
   // ── Cursor handlers ───────────────────────────────────────────────────────
