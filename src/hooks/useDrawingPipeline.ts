@@ -32,9 +32,34 @@ export function useDrawingPipeline(deps: any) {
     return result;
   }, []); // lê deps por referência — objeto estável vindo de drawingPipelineDepsRef.current
 
+  const commit3dTrace = useCallback(() => {
+    const n = rawCountRef.current;
+    if (n < 2) return null;
+    const { colorRef, sizeRef, particleRef, persist } = deps;
+
+    const positions = Array.from(rawCoordsRef.current.subarray(0, n * 3));
+    const element = {
+      id: particleRef.current.id,
+      element: '3dTrace',
+      type: 'traces',
+      color: colorRef.current,
+      size: sizeRef.current,
+      positions,
+      colorVariation: 0.1,
+      origin: {
+        x: rawCoordsRef.current[0],
+        y: rawCoordsRef.current[1],
+        z: rawCoordsRef.current[2],
+      },
+    };
+    persist(element as any);
+    rawCountRef.current = 0;
+    return { element };
+  }, []);
+
   const reset = useCallback(() => {
     rawCountRef.current = 0;
   }, []);
 
-  return { accumulatePoint, commitTrace, reset };
+  return { accumulatePoint, commitTrace, commit3dTrace, reset };
 }

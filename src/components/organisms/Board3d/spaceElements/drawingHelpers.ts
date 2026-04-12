@@ -120,15 +120,33 @@ export function createTraceAlongPath(
       };
 
       return createCirclesAlongPath(newElement, particleRef);
-    case '3dTrace':
-      newElement = {
-        particlesPerSphere: 100,
-        sphereRadius: elementData.size * 0.008,
-        particleSize: 0.1,
-        particleColor: elementData.color,
-        ...elementData,
-      };
+    case '3dTrace': {
+      // Rebuild path: positions is a flat number[] committed by the pipeline
+      if (elementData.positions?.length) {
+        const flat = elementData.positions as number[];
+        const positions3d: { x: number; y: number; z: number }[] = [];
+        for (let i = 0; i < flat.length / 3; i++) {
+          positions3d.push({ x: flat[i * 3], y: flat[i * 3 + 1], z: flat[i * 3 + 2] });
+        }
+        newElement = {
+          particlesPerSphere: 100,
+          sphereRadius: elementData.size * 0.008,
+          particleSize: 0.1,
+          particleColor: elementData.color,
+          position: positions3d,
+        };
+      } else {
+        // Live drawing path: position is [{x,y,z}] from movementPathRef
+        newElement = {
+          particlesPerSphere: 100,
+          sphereRadius: elementData.size * 0.008,
+          particleSize: 0.1,
+          particleColor: elementData.color,
+          ...elementData,
+        };
+      }
       return createParticleSpheresAlongPath(newElement, particleRef);
+    }
     default:
       console.log('Pincel inexistente');
       break;

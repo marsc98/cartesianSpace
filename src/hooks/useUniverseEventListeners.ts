@@ -12,6 +12,7 @@ import {
   createTraceAlongPath,
   detectClickIntersection,
 } from '../components/organisms/Board3d/spaceElements';
+import { createParticleSpheresAlongPath } from '../components/organisms/Board3d/basicGeometryElements';
 import { useSketch } from './useSketch';
 import { loadTraceWasm } from '../lib/wasm/index.js';
 import { useDrawingPipeline } from './useDrawingPipeline';
@@ -122,7 +123,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
     currentTraceSegmentsRef.current.push(el);
   };
 
-  const { accumulatePoint, commitTrace, reset: resetTrace } =
+  const { accumulatePoint, commitTrace, commit3dTrace, reset: resetTrace } =
     useDrawingPipeline(drawingPipelineDepsRef.current);
 
   /**
@@ -548,7 +549,10 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
       }
 
       if (drawingRef.current && e.button === 0) {
-        if (activeCreativityRef.current.id === 'optimizedTrace') {
+        if (
+          activeCreativityRef.current.id === 'optimizedTrace' ||
+          activeCreativityRef.current.id === '3dTrace'
+        ) {
           const tempGroup = particleRef.current.group;
           if (tempGroup) {
             sceneRef.current.remove(tempGroup);
@@ -558,7 +562,28 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
             });
             particleRef.current.group = null;
           }
-          commitTrace();
+          if (activeCreativityRef.current.id === '3dTrace') {
+            const result = commit3dTrace();
+            if (result?.element) {
+              particleRef.current = { id: result.element.id, group: null };
+              const flat = result.element.positions as number[];
+              const positions3d: { x: number; y: number; z: number }[] = [];
+              for (let i = 0; i < flat.length / 3; i++) {
+                positions3d.push({ x: flat[i * 3], y: flat[i * 3 + 1], z: flat[i * 3 + 2] });
+              }
+              const group = createParticleSpheresAlongPath({
+                particlesPerSphere: 100,
+                sphereRadius: result.element.size * 0.008,
+                particleSize: 0.1,
+                particleColor: result.element.color,
+                position: positions3d,
+              }, particleRef);
+              if (group) sceneRef.current.add(group);
+              currentTraceSegmentsRef.current.push(result.element);
+            }
+          } else {
+            commitTrace();
+          }
         }
 
         const sceneLengthEnd = sceneRef?.current?.children?.length;
@@ -1196,7 +1221,10 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
       }
 
       if (drawingRef.current && e.changedTouches.length > 0) {
-        if (activeCreativityRef.current.id === 'optimizedTrace') {
+        if (
+          activeCreativityRef.current.id === 'optimizedTrace' ||
+          activeCreativityRef.current.id === '3dTrace'
+        ) {
           const tempGroup = particleRef.current.group;
           if (tempGroup) {
             sceneRef.current.remove(tempGroup);
@@ -1206,7 +1234,28 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
             });
             particleRef.current.group = null;
           }
-          commitTrace();
+          if (activeCreativityRef.current.id === '3dTrace') {
+            const result = commit3dTrace();
+            if (result?.element) {
+              particleRef.current = { id: result.element.id, group: null };
+              const flat = result.element.positions as number[];
+              const positions3d: { x: number; y: number; z: number }[] = [];
+              for (let i = 0; i < flat.length / 3; i++) {
+                positions3d.push({ x: flat[i * 3], y: flat[i * 3 + 1], z: flat[i * 3 + 2] });
+              }
+              const group = createParticleSpheresAlongPath({
+                particlesPerSphere: 100,
+                sphereRadius: result.element.size * 0.008,
+                particleSize: 0.1,
+                particleColor: result.element.color,
+                position: positions3d,
+              }, particleRef);
+              if (group) sceneRef.current.add(group);
+              currentTraceSegmentsRef.current.push(result.element);
+            }
+          } else {
+            commitTrace();
+          }
         }
 
         const sceneLengthEnd = sceneRef?.current?.children?.length;

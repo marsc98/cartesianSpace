@@ -78,7 +78,7 @@ export const useDrawEvents = ({
     const particles = createTraceAlongPath(
       elementData,
       particleRef,
-      activeId === 'optimizedTrace'
+      (activeId === 'optimizedTrace' || activeId === '3dTrace')
         ? () => { }
         : (segment: any) => {
           addElement(segment);
