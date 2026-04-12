@@ -11,10 +11,7 @@ import { useSession } from './contexts/SessionContext';
 import {
   createTraceAlongPath,
   detectClickIntersection,
-  disposeMultipleObjects,
-  drawBlackboard,
 } from '../components/organisms/Board3d/spaceElements';
-import { createCartesianSpaceAxes } from '../components/organisms/Board3d/cartesianSpaceElements';
 import { useSketch } from './useSketch';
 import { loadTraceWasm } from '../lib/wasm/index.js';
 import { useDrawingPipeline } from './useDrawingPipeline';
@@ -97,7 +94,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
 
   const { axisRef, fontRef, writingRef, textRef, functionRef, cartesianSpaceRef, functionsRef } = useFunctionsRefs();
 
-  const { counting, seconds, startCounter, stopCounter, resetCounter } = useSession();
+  const { startCounter, stopCounter, resetCounter } = useSession();
 
   const { addElement, queueElement, flushQueue, deleteElementsById, elements } =
     useSketch();

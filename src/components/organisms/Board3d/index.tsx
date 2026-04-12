@@ -19,7 +19,6 @@ import { useModal } from '../../../hooks/useModal';
 
 // ── Hooks de domínio ──────────────────────────────────────────────────────
 import useNotifications from '../../../hooks/useNotifications';
-import useWebSocket from '../../../hooks/useWebsocket';
 import { useSketch } from '../../../hooks/useSketch';
 import { useUniverseEventListeners } from '../../../hooks/useUniverseEventListeners';
 import { useEditingModeManager } from '../../../hooks/useEditingModeManager';
@@ -144,7 +143,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
   useEffect(() => {
     document.body.style.cursor = isOwnCursorActive ? 'none' : 'default';
     return () => { document.body.style.cursor = 'default'; };
-  }, [isOwnCursorActive, pencilIsActive]);
+  }, [isOwnCursorActive]);
 
   // ── Loader ────────────────────────────────────────────────────────────────
   const handleSceneReady = useCallback(() => {
@@ -287,21 +286,6 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
 
   // Sincroniza deleteElementRef após cada render (sem useEffect — refs não são efeito colateral)
   deleteElementRef.current = deleteElement;
-
-  // TODO: simplificar interação via websocket
-  // ── WebSocket ─────────────────────────────────────────────────────────────
-  // useWebSocket(
-  //   `${import.meta.env.VITE_API_URL}/ws?id=${socketId}`,
-  //   socketId,
-  //   (x: number, y: number, z: number) => {
-  //     setIsOwnCursorActive(true);
-  //     setCoordinates({ x, y, z });
-  //   },
-  //   {
-  //     onConnect: () => console.log('WebSocket conectado'),
-  //     onDisconnect: () => console.log('WebSocket desconectado'),
-  //   },
-  // );
 
   // ── activeModalFormIds ────────────────────────────────────────────────────
   // Set de formIds ativos — dependência única e estável para os useMemos de helpers.
