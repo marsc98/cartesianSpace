@@ -1,34 +1,17 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 import { adjustColorTone, hexToRgb } from '../../../../utils/functions';
 import { safeGetItem } from '../../../../utils/storage';
 import {
   createCartesianSpaceAxes,
   drawFunction,
 } from '../cartesianSpaceElements';
+import { addTextToScene, addPaperToScene } from './textHandling';
 import {
   createParticleSpheresAlongPath,
   createCirclesAlongPath,
 } from '../basicGeometryElements';
 import resourcePool from '../../../../utils/classes/resourcePool';
-
-// D1 — Font cache (evita re-download da mesma fonte)
-const fontCache = new Map();
-
-function loadFont(path) {
-  if (fontCache.has(path)) return Promise.resolve(fontCache.get(path));
-  const promise = new Promise((resolve, reject) => {
-    const loader = new FontLoader();
-    loader.load(path, (font) => {
-      fontCache.set(path, font);
-      resolve(font);
-    }, undefined, reject);
-  });
-  fontCache.set(path, promise);
-  return promise;
-}
 
 // D2 — Utilitário de dispose de geometria/material
 function disposeObject(obj) {
@@ -1073,135 +1056,6 @@ function createLineBetweenPoints(sceneRef, elementData) {
   return line;
 }
 
-export function addTextToScene(scene, elementData, drawingStarted) {
-  // text, color, font, point
-  drawingStarted = false;
-  const particleId = `text-${Date.now()}`;
-  const newPosition = new THREE.Vector3(
-    elementData.position.x,
-    elementData.position.y,
-    elementData.position.z,
-  );
-  const tempFont = structuredClone(elementData.font);
-
-  // Criar o grupo que conterá o texto e suas bordas
-  const textGroup = new THREE.Group();
-  textGroup.userData.particleId = particleId;
-  textGroup.position.copy(newPosition);
-
-  // D1 — usar cache de fontes
-  loadFont(tempFont.path).then((font) => {
-    const textGeometry = new TextGeometry(elementData.text, {
-      font: font,
-      size: tempFont.size / 4,
-      // height: tempFont.height,
-      depth: tempFont.height / 4,
-      curveSegments: 100,
-      bevelEnabled: false,
-      bevelThickness: 10,
-      bevelSize: 8,
-      bevelOffset: 0,
-      bevelSegments: 5,
-    });
-
-    textGeometry.center(); // Centraliza o texto
-
-    // Use MeshBasicMaterial que não precisa de luz para teste
-    const textMaterial = new THREE.MeshBasicMaterial({
-      color: elementData.color ? elementData.color : 0x000000,
-    });
-    const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-
-    // Bordas (outline)
-    const edgesGeometry = new THREE.EdgesGeometry(textGeometry);
-    const edgesMaterial = new THREE.LineBasicMaterial({
-      color: 0x000000,
-      linewidth: 2,
-    });
-    const textEdges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
-
-    // Adicionar userData aos elementos individuais
-    textMesh.userData.particleId = particleId;
-    textEdges.userData.particleId = particleId;
-
-    // D2 — registrar dispose nos elementos para limpeza posterior
-    textMesh.userData.dispose = () => disposeObject(textMesh);
-    textEdges.userData.dispose = () => {
-      edgesGeometry.dispose();
-      edgesMaterial.dispose();
-    };
-
-    // Adicionar os elementos ao grupo em vez de à cena
-    textGroup.add(textMesh);
-    textGroup.add(textEdges);
-
-    // Adicionar o grupo à cena
-    scene.add(textGroup);
-  });
-  return textGroup;
-}
-
-export function addPaperToScene(
-  e,
-  text,
-  scene,
-  camera,
-  drawingStarted,
-  color,
-  font,
-) {
-  e.preventDefault();
-  drawingStarted = false;
-
-  const tempFont = structuredClone(font);
-
-  const direction = new THREE.Vector3();
-  camera.getWorldDirection(direction);
-
-  const distanceFromCamera = 20;
-
-  const newPosition = new THREE.Vector3(
-    camera.position.x + direction.x * distanceFromCamera,
-    camera.position.y + direction.y * distanceFromCamera,
-    camera.position.z + direction.z * distanceFromCamera,
-  );
-
-  // D1 — usar cache de fontes
-  loadFont(tempFont.path).then((font) => {
-    // 2. Crie o texto como uma geometria
-    const textGeometry = new TextGeometry(text, {
-      font: font,
-      size: tempFont.size / 4,
-      height: tempFont.height, // Altura do relevo (simula um "entalhe" no plano)
-      curveSegments: 12,
-      bevelEnabled: false,
-    });
-
-    // 3. Crie um plano para servir de base
-    const planeGeometry = new THREE.PlaneGeometry(5, 2);
-    const planeMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
-    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-
-    // 4. Posicione o texto sobre o plano
-    const textMaterial = new THREE.MeshStandardMaterial({
-      color: color ? color : 0x000000,
-    });
-    const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-
-    // D2 — registrar dispose nos elementos para limpeza posterior
-    plane.userData.dispose = () => disposeObject(plane);
-    textMesh.userData.dispose = () => disposeObject(textMesh);
-
-    textMesh.position.set(newPosition); // Levemente acima do plano
-    plane.position.set(newPosition);
-    plane.quaternion.copy(camera.quaternion);
-    textMesh.quaternion.copy(camera.quaternion);
-
-    // 5. Adicione ambos à cena
-    scene.add(plane);
-    scene.add(textMesh);
-  });
-}
 
 // Função para carregar imagem do localStorage e criar textura
 async function loadImageFromLocalStorageToThreeJS(imageId) {
@@ -2563,30 +2417,6 @@ const createInstancedGroup = (originalGroup, maxInstances = 100, sceneRef) => {
   });
 
   return instancedObjects;
-};
-
-export const handleCopyWithInstances = (
-  originalGroup,
-  lastIntersected,
-  sceneRef,
-) => {
-  const instancedObjects = createInstancedGroup(originalGroup, 100, sceneRef);
-  const matrix = new THREE.Matrix4();
-
-  instancedObjects.forEach((obj, index) => {
-    if (obj.count < obj.mesh.count) {
-      // Define a matriz de transformação para a nova instância
-      matrix.setPosition(
-        lastIntersected.current.position.x + 10,
-        lastIntersected.current.position.y,
-        lastIntersected.current.position.z,
-      );
-
-      obj.mesh.setMatrixAt(obj.count, matrix);
-      obj.count++;
-      obj.mesh.instanceMatrix.needsUpdate = true;
-    }
-  });
 };
 
 export const createOptimizedTrace = (
