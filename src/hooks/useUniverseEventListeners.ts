@@ -565,7 +565,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
           if (activeCreativityRef.current.id === '3dTrace') {
             const result = commit3dTrace();
             if (result?.element) {
-              particleRef.current = { id: result.element.id, group: null };
+              // group already null from cleanup above; keep sceneLengthStart intact
               const flat = result.element.positions as number[];
               const positions3d: { x: number; y: number; z: number }[] = [];
               for (let i = 0; i < flat.length / 3; i++) {
@@ -1237,7 +1237,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
           if (activeCreativityRef.current.id === '3dTrace') {
             const result = commit3dTrace();
             if (result?.element) {
-              particleRef.current = { id: result.element.id, group: null };
+              // group already null from cleanup above; keep sceneLengthStart intact
               const flat = result.element.positions as number[];
               const positions3d: { x: number; y: number; z: number }[] = [];
               for (let i = 0; i < flat.length / 3; i++) {
