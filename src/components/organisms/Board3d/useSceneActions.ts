@@ -21,7 +21,7 @@ export interface UseSceneActionsDeps {
  * e com a câmera, mantendo o componente Board3d livre desse detalhe.
  */
 export function useSceneActions({ setRulerIsActive, rulerIsActive }: UseSceneActionsDeps) {
-  const { sceneRef, rendererRef, elementsStackRef } = useScene();
+  const { sceneRef, rendererRef, elementsStackRef, needsRenderRef } = useScene();
   const { cameraRef, raycasterRef, mouseRef, speedRefectorRef } = useCamera();
   const { editingArrowsRef, lastIntersected, originalColor } = useElements();
   const { colorRef, rulerRef } = useDrawing();
@@ -59,9 +59,12 @@ export function useSceneActions({ setRulerIsActive, rulerIsActive }: UseSceneAct
         up: [up, speed], down: [up, -speed],
       };
       const entry = map[direction];
-      if (entry) cam.position.addScaledVector(entry[0], entry[1]);
+      if (entry) {
+        cam.position.addScaledVector(entry[0], entry[1]);
+        needsRenderRef.current = true;
+      }
     },
-    [cameraRef, speedRefectorRef],
+    [cameraRef, speedRefectorRef, needsRenderRef],
   );
 
   const rotateCamera = useCallback(
