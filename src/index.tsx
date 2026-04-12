@@ -9,7 +9,6 @@ import { AppProviders } from './providers/AppProviders';
 import { SketchProvider } from './hooks/useSketch';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-const id = new URLSearchParams(window.location.search).get('pid');
 const isBoard = new URLSearchParams(window.location.search).get('board');
 const socketId = new URLSearchParams(window.location.search).get('bid');
 
@@ -19,7 +18,6 @@ root.render(
       <AppProviders>
         <SketchProvider>
           <CoordinatesProvider>
-            {/*id ? <PhoneControl /> : (is3d || socketId) ? <Board3d socketId={socketId} /> : <Board />*/}
             {isBoard ? <Board /> : <Board3d socketId={socketId} />}
           </CoordinatesProvider>
         </SketchProvider>

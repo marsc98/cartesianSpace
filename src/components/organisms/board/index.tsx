@@ -9,7 +9,6 @@ function Board() {
   const canvasRef = useRef(null);
   const { coordinatesState, setcoordinatesState } = useCoordinates();
   const [boardContext, setBoardcontext] = useState(null);
-  // const [coordinatesState, setDrawingCoordinates] = useState({ x: 0, y: 0 });
   const [controlsRangeState, setControlsRangeState] = useState(() => ({
     cursor: 3,
     y: window.innerHeight / 2,
