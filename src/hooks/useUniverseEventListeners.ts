@@ -548,20 +548,15 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
       }
 
       if (drawingRef.current && e.button === 0) {
-        if (
-          activeCreativityRef.current.id === 'optimizedTrace' ||
-          activeCreativityRef.current.id === '3dTrace'
-        ) {
-          if (activeCreativityRef.current.id === '3dTrace') {
-            const tempGroup = particleRef.current.group;
-            if (tempGroup) {
-              sceneRef.current.remove(tempGroup);
-              tempGroup.traverse((obj) => {
-                if ((obj as any).geometry) (obj as any).geometry.dispose();
-                if ((obj as any).material) (obj as any).material.dispose();
-              });
-              particleRef.current.group = null;
-            }
+        if (activeCreativityRef.current.id === 'optimizedTrace') {
+          const tempGroup = particleRef.current.group;
+          if (tempGroup) {
+            sceneRef.current.remove(tempGroup);
+            tempGroup.traverse((obj) => {
+              if ((obj as any).geometry) (obj as any).geometry.dispose();
+              if ((obj as any).material) (obj as any).material.dispose();
+            });
+            particleRef.current.group = null;
           }
           commitTrace();
         }
@@ -1201,20 +1196,15 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
       }
 
       if (drawingRef.current && e.changedTouches.length > 0) {
-        if (
-          activeCreativityRef.current.id === 'optimizedTrace' ||
-          activeCreativityRef.current.id === '3dTrace'
-        ) {
-          if (activeCreativityRef.current.id === '3dTrace') {
-            const tempGroup = particleRef.current.group;
-            if (tempGroup) {
-              sceneRef.current.remove(tempGroup);
-              tempGroup.traverse((obj) => {
-                if (obj.geometry) obj.geometry.dispose();
-                if (obj.material) obj.material.dispose();
-              });
-              particleRef.current.group = null;
-            }
+        if (activeCreativityRef.current.id === 'optimizedTrace') {
+          const tempGroup = particleRef.current.group;
+          if (tempGroup) {
+            sceneRef.current.remove(tempGroup);
+            tempGroup.traverse((obj) => {
+              if (obj.geometry) obj.geometry.dispose();
+              if (obj.material) obj.material.dispose();
+            });
+            particleRef.current.group = null;
           }
           commitTrace();
         }

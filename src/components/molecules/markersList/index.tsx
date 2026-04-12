@@ -199,6 +199,9 @@ function MarkersList({
           id = 'axis';
           isSvg = true;
           break;
+        case 'optimizedTrace':
+          id = 'optimizedTrace';
+          break;
         default:
           id = marker.element;
           break;

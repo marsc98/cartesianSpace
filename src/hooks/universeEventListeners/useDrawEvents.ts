@@ -57,11 +57,12 @@ export const useDrawEvents = ({
     const activeId = activeCreativityRef.current.id;
     if (activeId === 'optimizedTrace' || activeId === '3dTrace') {
       accumulatePoint(movementVec.current.x, movementVec.current.y, movementVec.current.z);
-      if (activeId === 'optimizedTrace') return;
     }
 
+    const previewElement = activeId === 'optimizedTrace' ? '3dTrace' : activeId;
+
     const elementData = {
-      element: activeCreativityRef.current.id,
+      element: previewElement,
       id: particleRef.current.id,
       type: activeCreativityRef.current.type,
       size: sizeRef.current,
@@ -77,7 +78,7 @@ export const useDrawEvents = ({
     const particles = createTraceAlongPath(
       elementData,
       particleRef,
-      activeCreativityRef.current.id === '3dTrace'
+      activeId === 'optimizedTrace'
         ? () => { }
         : (segment: any) => {
           addElement(segment);

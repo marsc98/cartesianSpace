@@ -98,6 +98,7 @@ function CreativityForm(props) {
   const traces = [
     { id: '2dTrace', type: 'traces', name: '2D' },
     { id: '3dTrace', type: 'traces', name: '3D' },
+    { id: 'optimizedTrace', type: 'traces', name: 'Traço Otimizado' },
   ];
 
   const handleSubmit = (e) => {
