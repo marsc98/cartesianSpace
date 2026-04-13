@@ -95,7 +95,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
   coordinatesRef.current = coordinates;
   const { mountRef } = useScene();
   const { historySize } = useHistory();
-  const { cameraRef, controlsRef, rotationRef } = useCamera();
+  const { cameraRef, controlsRef, rotationRef, keysHeldRef } = useCamera();
   const { updateSketch } = useSketch();
   const { notify, notification } = useNotifications();
 
@@ -153,6 +153,10 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
 
   // ── useSceneActions ───────────────────────────────────────────────────────
   const scene = useSceneActions({ setRulerIsActive, rulerIsActive });
+
+  const onCameraUpdate = useCallback((dt: number) => {
+    scene.updateCameraWithKeys(keysHeldRef.current, dt);
+  }, [scene, keysHeldRef]);
 
   // ── Editing mode manager ──────────────────────────────────────────────────
   const editingModeManager = useEditingModeManager(EDITING_MODES);
@@ -277,6 +281,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
     handleCalculator: modalHandlers.handleCalculator,
     handleMarkPosition: modalHandlers.handleMarkPosition,
     handleRuler: scene.handleRuler,
+    handleUnitsSettings: modalHandlers.handleUnitsSettings,
     notify,
     setUiHidden,
     setIsDrawing,
@@ -362,6 +367,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
         navigatorRenderFnRef={navigatorRenderFnRef}
         accelerometerRenderFnRef={accelerometerRenderFnRef}
         onSceneReady={handleSceneReady}
+        onCameraUpdate={onCameraUpdate}
       />
 
       {/* Device orientation / acelerômetro */}

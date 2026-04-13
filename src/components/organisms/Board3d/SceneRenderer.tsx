@@ -18,6 +18,8 @@ interface SceneRendererProps {
   accelerometerRenderFnRef: React.MutableRefObject<(() => void) | null>;
   /** Chamada uma única vez após o primeiro frame renderizado */
   onSceneReady?: () => void;
+  /** Chamada a cada frame com o delta de tempo em segundos */
+  onCameraUpdate?: (deltaTime: number) => void;
 }
 
 /**
@@ -33,6 +35,7 @@ export function SceneRenderer({
   navigatorRenderFnRef,
   accelerometerRenderFnRef,
   onSceneReady,
+  onCameraUpdate,
 }: SceneRendererProps) {
   const { sceneRef, rendererRef, elementsStackRef, needsRenderRef } = useScene();
   const { cameraRef, raycasterRef } = useCamera();
@@ -70,9 +73,12 @@ export function SceneRenderer({
     createRealisticStarfield(sceneRef, elementsStackRef as any);
 
     // ── Animation loop ─────────────────────────────────────────────────────
+    const clock = new THREE.Clock();
     let sceneReadyFired = false;
     const animate = () => {
       animationFrameRef.current = requestAnimationFrame(animate);
+      const dt = clock.getDelta();
+      onCameraUpdate?.(dt);
       // Acelerômetro ativo: sempre precisa renderizar para refletir rotação da câmera
       if (accelerometerRenderFnRef.current) needsRenderRef.current = true;
       if (!needsRenderRef.current) return;

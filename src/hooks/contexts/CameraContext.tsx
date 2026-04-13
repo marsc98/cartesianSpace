@@ -10,6 +10,7 @@ interface CameraContextValue {
   controlsRef: React.MutableRefObject<CameraControls>;
   speedRefectorRef: React.MutableRefObject<number>;
   rotationRef: React.MutableRefObject<CameraRotationState>;
+  keysHeldRef: React.MutableRefObject<Set<string>>;
 }
 
 const CameraContext = createContext<CameraContextValue | null>(null);
@@ -28,6 +29,7 @@ export const CameraProvider = ({ children }: { children: React.ReactNode }) => {
     lastClickTime: 0,
   });
   const speedRefectorRef = useRef(10);
+  const keysHeldRef = useRef(new Set<string>());
   const rotationRef = useRef<CameraRotationState>({
     x: 0, y: 0, z: 0,
     active: false,
@@ -46,7 +48,7 @@ export const CameraProvider = ({ children }: { children: React.ReactNode }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const contextValue = useMemo(() => ({
     cameraRef, raycasterRef, mouseRef,
-    controlsRef, speedRefectorRef, rotationRef,
+    controlsRef, speedRefectorRef, rotationRef, keysHeldRef,
   }), []);
 
   return (

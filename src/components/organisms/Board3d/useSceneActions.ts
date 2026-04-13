@@ -22,7 +22,7 @@ export interface UseSceneActionsDeps {
  */
 export function useSceneActions({ setRulerIsActive, rulerIsActive }: UseSceneActionsDeps) {
   const { sceneRef, rendererRef, elementsStackRef, needsRenderRef } = useScene();
-  const { cameraRef, raycasterRef, mouseRef, speedRefectorRef } = useCamera();
+  const { cameraRef, raycasterRef, mouseRef, speedRefectorRef, keysHeldRef } = useCamera();
   const { editingArrowsRef, lastIntersected, originalColor } = useElements();
   const { colorRef, rulerRef } = useDrawing();
 
@@ -45,10 +45,10 @@ export function useSceneActions({ setRulerIsActive, rulerIsActive }: UseSceneAct
   );
 
   const moveCamera = useCallback(
-    (direction: string) => {
+    (direction: string, amount = 1) => {
       if (!cameraRef.current) return;
       const cam = cameraRef.current;
-      const speed = speedRefectorRef.current / 2;
+      const speed = (speedRefectorRef.current / 2) * amount;
       const dir = new THREE.Vector3();
       cam.getWorldDirection(dir);
       const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
@@ -61,6 +61,47 @@ export function useSceneActions({ setRulerIsActive, rulerIsActive }: UseSceneAct
       const entry = map[direction];
       if (entry) {
         cam.position.addScaledVector(entry[0], entry[1]);
+        needsRenderRef.current = true;
+      }
+    },
+    [cameraRef, speedRefectorRef, needsRenderRef],
+  );
+
+  const updateCameraWithKeys = useCallback(
+    (keysHeld: Set<string>, delta: number) => {
+      if (!cameraRef.current || keysHeld.size === 0) return;
+      const cam = cameraRef.current;
+      const speed = speedRefectorRef.current;
+      const dist = speed * delta;
+      const dir = new THREE.Vector3();
+      cam.getWorldDirection(dir);
+      const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
+      const up = new THREE.Vector3(0, 1, 0);
+
+      const ctrlHeld = keysHeld.has('Control');
+
+      if (keysHeld.has('ArrowUp')) {
+        cam.position.addScaledVector(ctrlHeld ? up : dir, dist);
+        needsRenderRef.current = true;
+      }
+      if (keysHeld.has('ArrowDown')) {
+        cam.position.addScaledVector(ctrlHeld ? up : dir, -dist);
+        needsRenderRef.current = true;
+      }
+      if (keysHeld.has('ArrowLeft')) {
+        cam.position.addScaledVector(right, -dist);
+        needsRenderRef.current = true;
+      }
+      if (keysHeld.has('ArrowRight')) {
+        cam.position.addScaledVector(right, dist);
+        needsRenderRef.current = true;
+      }
+      if (keysHeld.has('PageUp')) {
+        cam.position.addScaledVector(up, dist);
+        needsRenderRef.current = true;
+      }
+      if (keysHeld.has('PageDown')) {
+        cam.position.addScaledVector(up, -dist);
         needsRenderRef.current = true;
       }
     },
@@ -253,6 +294,7 @@ export function useSceneActions({ setRulerIsActive, rulerIsActive }: UseSceneAct
   return {
     setCameraPosition,
     moveCamera,
+    updateCameraWithKeys,
     rotateCamera,
     addNewCube,
     clearScene,

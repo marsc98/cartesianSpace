@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import type { UniverseContext } from '../../types/universe';
+import { useCamera } from '../contexts/CameraContext';
 
 export const useKeyboardEvents = (ctx: UniverseContext, {
   setLinePoints,
@@ -12,8 +13,8 @@ export const useKeyboardEvents = (ctx: UniverseContext, {
   undo,
   redo,
 }: any) => {
+  const { keysHeldRef } = useCamera();
   const {
-    moveCamera,
     addText,
     handleCreativity,
     handleStopAll,
@@ -25,6 +26,7 @@ export const useKeyboardEvents = (ctx: UniverseContext, {
     handleInfo,
     handleMarkPosition,
     handleCalculator,
+    handleUnitsSettings,
     updateSketch,
     notify,
     handleSavedScenes,
@@ -53,19 +55,16 @@ export const useKeyboardEvents = (ctx: UniverseContext, {
       }
 
       if (!writingRef.current) {
-        if (e.key === 'ArrowUp') {
-          if (controlsRef.current.controlPressed) moveCamera('up', 1);
-          else moveCamera('forward', 1);
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown'].includes(e.key)) {
+          keysHeldRef.current.add(e.key);
+          return;
         }
-        if (e.key === 'ArrowDown') {
-          if (controlsRef.current.controlPressed) moveCamera('down', 1);
-          else moveCamera('backward', 1);
+
+        if (e.key === 'v' || e.key === 'V') {
+          handleUnitsSettings();
+          return;
         }
-        if (e.key === 'ArrowLeft') moveCamera('left', 1);
-        if (e.key === 'ArrowRight') moveCamera('right', 1);
-        if (e.key === 'PageUp') moveCamera('up', 1);
-        if (e.key === 'PageDown') moveCamera('down', 1);
-        
+
         if (e.key === 't' || e.key === 'T') {
           writingRef.current = true;
           setIsWriting(true);
@@ -131,7 +130,7 @@ export const useKeyboardEvents = (ctx: UniverseContext, {
       setIsOwnCursorActive,
       controlsRef,
       writingRef,
-      moveCamera,
+      keysHeldRef,
       setIsWriting,
       addText,
       handleCreativity,
@@ -139,6 +138,7 @@ export const useKeyboardEvents = (ctx: UniverseContext, {
       handleElementsSelection,
       handleCartesianSpaceDraw,
       handleRuler,
+      handleUnitsSettings,
       redo,
       notify,
       undo,
@@ -156,7 +156,10 @@ export const useKeyboardEvents = (ctx: UniverseContext, {
   const handleKeyUp = useCallback((e: any) => {
     if (e.key === 'Shift') controlsRef.current.shiftPressed = false;
     if (e.key === 'Control') controlsRef.current.controlPressed = false;
-  }, [controlsRef]);
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown'].includes(e.key)) {
+      keysHeldRef.current.delete(e.key);
+    }
+  }, [controlsRef, keysHeldRef]);
 
   return { handleKeyDown, handleKeyUp };
 };
