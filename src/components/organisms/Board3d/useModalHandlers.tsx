@@ -24,6 +24,7 @@ import { useCoordinates } from '../../../hooks/contexts/SessionContext';
 import CartesianSpaceForm from '../../molecules/cartesianSpaceForm';
 import { useUI } from '../../../hooks/contexts/UIContext';
 import { useModal } from '../../../hooks/useModal';
+import { UnitSettingsModal } from '../../molecules/unitSettingsModal';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -76,7 +77,7 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
   } = deps;
 
   // ── Contextos ─────────────────────────────────────────────────────────────
-  const { addModal, removeModal } = useModal();
+  const { addModal, removeModal, modalsList } = useModal();
   const { setScenesIsOpen } = useUI();
   const { colorRef, drawerRef, activeCreativityRef, sizeRef } = useDrawing();
   const {
@@ -528,6 +529,24 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
   // Sincroniza a ref com a versão mais recente da função
   handleCreativityRef.current = handleCreativity;
 
+  // ── Unidades de medida ────────────────────────────────────────────────────
+
+  const handleUnitsSettings = useCallback(() => {
+    const id = 'modal-unit-settings';
+    if (modalsList.find((m: any) => m.formId === 'unit-settings-form')) {
+      removeModal(id);
+      return;
+    }
+    addModal({
+      id,
+      title: 'Unidades de Medida',
+      content: <UnitSettingsModal />,
+      onClose: () => removeModal(id),
+      formId: 'unit-settings-form',
+      buttonText: 'Aplicar',
+    });
+  }, [addModal, removeModal, modalsList]);
+
   // ── Lousa (BlackBoard) ────────────────────────────────────────────────────
   // Não abre modal — ativa diretamente os refs/state necessários.
   // Mantido aqui por coesão com os outros handlers de ferramenta.
@@ -562,6 +581,7 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
     handleEditing,
     handleCreativity,
     handleBlackBoard,
+    handleUnitsSettings,
     handleCloseModal,
   };
 }
