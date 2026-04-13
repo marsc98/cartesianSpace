@@ -1,4 +1,5 @@
 import React from 'react';
+import { UnitsProvider } from '../hooks/contexts/UnitsContext';
 import { SessionProvider } from '../hooks/contexts/SessionContext';
 import { UIProvider } from '../hooks/contexts/UIContext';
 import { SceneProvider } from '../hooks/contexts/SceneContext';
@@ -9,21 +10,23 @@ import { FunctionsProvider } from '../hooks/contexts/FunctionsContext';
 import { ElementsProvider } from '../hooks/contexts/ElementsContext';
 
 export const AppProviders = ({ children }) => (
-  <SessionProvider>
-    <UIProvider>
-      <SceneProvider>
-        <HistoryProvider>
-          <CameraProvider>
-            <DrawingProvider>
-              <FunctionsProvider>
-                <ElementsProvider>
-                  {children}
-                </ElementsProvider>
-              </FunctionsProvider>
-            </DrawingProvider>
-          </CameraProvider>
-        </HistoryProvider>
-      </SceneProvider>
-    </UIProvider>
-  </SessionProvider>
+  <UnitsProvider>
+    <SessionProvider>
+      <UIProvider>
+        <SceneProvider>
+          <HistoryProvider>
+            <CameraProvider>
+              <DrawingProvider>
+                <FunctionsProvider>
+                  <ElementsProvider>
+                    {children}
+                  </ElementsProvider>
+                </FunctionsProvider>
+              </DrawingProvider>
+            </CameraProvider>
+          </HistoryProvider>
+        </SceneProvider>
+      </UIProvider>
+    </SessionProvider>
+  </UnitsProvider>
 );

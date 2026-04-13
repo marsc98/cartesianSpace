@@ -34,6 +34,7 @@ export interface UniverseContext {
   handleCalculator: () => void;
   handleMarkPosition: () => void;
   handleRuler: () => void;
+  handleUnitsSettings: () => void;
   notify: (message: string, type: 'info' | 'success' | 'warning' | 'error' | 'neutral', options?: any) => void;
   setUiHidden: React.Dispatch<React.SetStateAction<boolean>>;
   setIsDrawing: React.Dispatch<React.SetStateAction<boolean>>;
