@@ -7,7 +7,7 @@ import { useScene } from './contexts/SceneContext';
 import { useHistory } from './contexts/HistoryContext';
 import { useCamera } from './contexts/CameraContext';
 import { useFunctionsRefs } from './contexts/FunctionsContext';
-import { useSession } from './contexts/SessionContext';
+import { useSession, useCoordinates } from './contexts/SessionContext';
 import {
   createTraceAlongPath,
   detectClickIntersection,
@@ -24,6 +24,10 @@ import { useDrawEvents } from './universeEventListeners/useDrawEvents';
 import { useCreationEvents } from './universeEventListeners/useCreationEvents';
 import type { UniverseContext } from '../types/universe';
 import type { TraceDescriptor, AnyElement } from '../types';
+
+// Constantes de módulo para cálculo do plano virtual — evita alocação por evento
+const _groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+const _groundTarget = new THREE.Vector3();
 
 export const useUniverseEventListeners = (ctx: UniverseContext) => {
   const {
@@ -96,6 +100,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
   const { axisRef, fontRef, writingRef, textRef, functionRef, cartesianSpaceRef, functionsRef } = useFunctionsRefs();
 
   const { startCounter, stopCounter, resetCounter } = useSession();
+  const { setWorldCoordinates } = useCoordinates();
 
   const { addElement, queueElement, flushQueue, deleteElementsById, elements } =
     useSketch();
@@ -698,6 +703,15 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
       mouseRef.current.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       mouseRef.current.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
 
+      if (raycasterRef.current && cameraRef.current) {
+        raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
+        _groundTarget.set(0, 0, 0);
+        raycasterRef.current.ray.intersectPlane(_groundPlane, _groundTarget);
+        if (_groundTarget.lengthSq() > 0) {
+          setWorldCoordinates({ x: _groundTarget.x, y: _groundTarget.y, z: _groundTarget.z });
+        }
+      }
+
       if (
         searchingFacesRef.current &&
         !drawingRef.current &&
@@ -735,6 +749,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
       stopCounter,
       resetCounter,
       setIsOwnCursorActive,
+      setWorldCoordinates,
     ],
   );
 

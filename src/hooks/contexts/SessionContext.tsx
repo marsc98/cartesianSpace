@@ -6,6 +6,8 @@ import type { Vector3 } from '../../types';
 interface CoordinatesContextValue {
   coordinates: Vector3;
   setCoordinates: React.Dispatch<React.SetStateAction<Vector3>>;
+  worldCoordinates: Vector3 | null;
+  setWorldCoordinates: React.Dispatch<React.SetStateAction<Vector3 | null>>;
 }
 
 // ─── Session context (muda raramente) ────────────────────────────────────────
@@ -32,6 +34,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
   const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   const [isMobile, setIsMobile] = useState(isMobileDevice || false);
   const [coordinates, setCoordinates] = useState<Vector3>({ x: 0, y: 0, z: 0 });
+  const [worldCoordinates, setWorldCoordinates] = useState<Vector3 | null>(null);
   const [currentColor, setCurrentColor] = useState('#ff0000');
   const [counting, setCounting] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -69,8 +72,8 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
   }, []);
 
   const coordinatesValue = useMemo<CoordinatesContextValue>(
-    () => ({ coordinates, setCoordinates }),
-    [coordinates],
+    () => ({ coordinates, setCoordinates, worldCoordinates, setWorldCoordinates }),
+    [coordinates, worldCoordinates],
   );
 
   const sessionValue = useMemo<SessionContextValue>(
