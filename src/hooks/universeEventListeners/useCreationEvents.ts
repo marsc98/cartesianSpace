@@ -21,6 +21,7 @@ export const useCreationEvents = (
     selectedTerrainRef,
     colorRef,
     sizeRef,
+    drawDistanceRef,
     setIsResizingElement,
     initialElementsCoordinatesRef,
     raycasterRef,
@@ -50,7 +51,7 @@ export const useCreationEvents = (
         };
 
         raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
-        const distance = 10;
+        const distance = drawDistanceRef.current;
         const point = raycasterRef.current.ray.direction
           .clone()
           .multiplyScalar(distance)

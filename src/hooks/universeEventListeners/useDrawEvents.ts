@@ -12,6 +12,7 @@ export const useDrawEvents = ({
   particleRef,
   sizeRef,
   colorRef,
+  drawDistanceRef,
   sceneRef,
   currentTraceSegmentsRef,
   lastIntersected,
@@ -35,7 +36,7 @@ export const useDrawEvents = ({
     if (elementsRef.current.active) return;
 
     raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
-    const distance = 10;
+    const distance = drawDistanceRef.current;
     workVec.current
       .copy(raycasterRef.current.ray.direction)
       .multiplyScalar(distance)

@@ -5,6 +5,8 @@ import UniverseNavigator from '../../molecules/universeNavigator';
 import { useCamera } from '../../../hooks/contexts/CameraContext';
 import { useScene } from '../../../hooks/contexts/SceneContext';
 import { useSession } from '../../../hooks/contexts/SessionContext';
+import { useDrawingRefs } from '../../../hooks/contexts/DrawingContext';
+import { useDepthIndicator } from '../../../hooks/useDepthIndicator';
 import type { NotificationData } from '../../../hooks/useNotifications';
 import css from './index.module.scss';
 
@@ -66,7 +68,9 @@ export function ToolsManager({
 }: ToolsManagerProps) {
   const { isMobile } = useSession();
   const { cameraRef, speedRefectorRef } = useCamera();
-  const { rendererRef } = useScene();
+  const { sceneRef, rendererRef, needsRenderRef } = useScene();
+  const { drawDistanceRef } = useDrawingRefs();
+  const { onDistanceChange } = useDepthIndicator(cameraRef, sceneRef, needsRenderRef);
 
   return (
     <>
@@ -124,6 +128,23 @@ export function ToolsManager({
         position="trr"
         jump="top-4.2"
       />
+
+      {/* ── Controle de distância de interação ───────────────────────────── */}
+      <div
+        className={css['range-input-container']}
+        style={{ left: isMobile ? 0 : '-3.5rem' }}
+        title="Distância"
+      >
+        <RangeInput
+          id="distanceSetter"
+          isMobile={isMobile}
+          min={5}
+          max={200}
+          sizeRef={drawDistanceRef}
+          shouldRotate={true}
+          onValueChange={onDistanceChange}
+        />
+      </div>
 
       {/* ── Controle de velocidade da câmera ──────────────────────────────── */}
       <div

@@ -72,7 +72,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
     setLinePoints, awaitingSecondClick, setAwaitingSecondClick, linePoints,
     drawingRef, drawingStartedRef, colorRef, lineBetweenPointsRef, drawerRef,
     drawingElementRef, initialElementsCoordinatesRef, currentTraceSegmentsRef,
-    activeCreativityRef, sizeRef, planesRef,
+    activeCreativityRef, sizeRef, drawDistanceRef, planesRef,
   } = useDrawing();
 
   // Ref estável para linePoints — evita que handleBoardClick invalide a cada clique
@@ -193,6 +193,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
     particleRef,
     sizeRef,
     colorRef,
+    drawDistanceRef,
     sceneRef,
     currentTraceSegmentsRef,
     lastIntersected,
@@ -228,7 +229,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
         };
 
         raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
-        const distance = 10;
+        const distance = drawDistanceRef.current;
         const point = raycasterRef.current.ray.direction
           .clone()
           .multiplyScalar(distance)
@@ -1092,7 +1093,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
             mouseRef.current,
             cameraRef.current,
           );
-          const distance = 10;
+          const distance = drawDistanceRef.current;
           const point = raycasterRef.current.ray.direction
             .clone()
             .multiplyScalar(distance)
@@ -1190,7 +1191,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
         !planesRef?.current
       ) {
         raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
-        const distance = 10;
+        const distance = drawDistanceRef.current;
         const point = raycasterRef.current.ray.direction
           .clone()
           .multiplyScalar(distance)
@@ -1208,7 +1209,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
           y: lastTouch.clientY,
         };
         raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
-        const distance = 10;
+        const distance = drawDistanceRef.current;
         const point = raycasterRef.current.ray.direction
           .clone()
           .multiplyScalar(distance)

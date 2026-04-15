@@ -27,6 +27,7 @@ interface DrawingRefsValue {
   activeCreativityRef: React.MutableRefObject<CreativityRef>;
   colorRef: React.MutableRefObject<string>;
   sizeRef: React.MutableRefObject<number>;
+  drawDistanceRef: React.MutableRefObject<number>;
   rulerRef: React.MutableRefObject<RulerState>;
   planesRef: React.MutableRefObject<boolean>;
 }
@@ -56,18 +57,22 @@ export const DrawingProvider = ({ children }: { children: React.ReactNode }) => 
   const activeCreativityRef = useRef<CreativityRef>({ id: '2dTrace', name: '2D', type: 'traces' });
   const colorRef = useRef('#ff0000');
   const sizeRef = useRef(10);
+  const drawDistanceRef = useRef(10);
   const rulerRef = useRef<RulerState>({ active: false, object: null });
   const planesRef = useRef(false);
 
   useEffect(() => {
     const storedColor = safeGetValidated('color', isValidColor);
     const storedSize = safeGetParsed('size', isValidSize);
+    const storedDistance = safeGetParsed('drawDistance', (v): v is number => typeof v === 'number' && isFinite(v) && v >= 5 && v <= 200);
     if (storedColor !== null) colorRef.current = storedColor;
     if (storedSize !== null) sizeRef.current = storedSize;
+    if (storedDistance !== null) drawDistanceRef.current = storedDistance;
 
     return () => {
       safeSetItem('color', colorRef.current);
       safeSetItem('size', String(sizeRef.current));
+      safeSetItem('drawDistance', String(drawDistanceRef.current));
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -83,7 +88,7 @@ export const DrawingProvider = ({ children }: { children: React.ReactNode }) => 
     drawingRef, drawingStartedRef, drawingElementRef,
     initialElementsCoordinatesRef, lineBetweenPointsRef,
     currentTraceSegmentsRef, drawerRef, activeCreativityRef,
-    colorRef, sizeRef, rulerRef, planesRef,
+    colorRef, sizeRef, drawDistanceRef, rulerRef, planesRef,
   }), []);
 
   return (

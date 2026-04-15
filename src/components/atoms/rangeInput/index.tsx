@@ -4,6 +4,7 @@ import css from './index.module.scss';
 interface RangeInputProps extends React.HTMLAttributes<HTMLDivElement> {
   isMobile?: boolean;
   setElementSize?: (size: number) => void;
+  onValueChange?: (value: number) => void;
   label?: string;
   id?: string;
   sizeRef: React.MutableRefObject<number>;
@@ -14,7 +15,7 @@ interface RangeInputProps extends React.HTMLAttributes<HTMLDivElement> {
   shouldRotate?: boolean;
 }
 
-const RangeInput = ({ isMobile, setElementSize, label, id, sizeRef, min, max, colorRef, className, shouldRotate = false, ...props }: RangeInputProps) => {
+const RangeInput = ({ isMobile, setElementSize, onValueChange, label, id, sizeRef, min, max, colorRef, className, shouldRotate = false, ...props }: RangeInputProps) => {
   const [size, setSize] = useState(sizeRef.current || 20);
 
   useEffect(() => {
@@ -24,24 +25,29 @@ const RangeInput = ({ isMobile, setElementSize, label, id, sizeRef, min, max, co
   const handleChange = (value: string | number) => {
     if (value === '') {
       setSize(0);
-      if (typeof setElementSize === 'function') {
-        setElementSize(0);
-      }
+      setElementSize?.(0);
+      onValueChange?.(0);
       return;
     }
 
-    const numValue = parseInt(String(value), 10); // mantém parseInt como no original
+    const numValue = parseInt(String(value), 10);
     if (!isNaN(numValue) && numValue >= min && numValue <= max) {
-      if (typeof setElementSize === 'function') {
-        setElementSize(numValue);
-      }
+      setElementSize?.(numValue);
+      onValueChange?.(numValue);
       setSize(numValue);
     }
   };
 
-
-  const decrease = () => setSize(prev => Math.max(min, parseInt(prev, 10) - 1));
-  const increase = () => setSize(prev => Math.min(max, parseInt(prev, 10) + 1));
+  const decrease = () => setSize(prev => {
+    const next = Math.max(min, prev - 1);
+    onValueChange?.(next);
+    return next;
+  });
+  const increase = () => setSize(prev => {
+    const next = Math.min(max, prev + 1);
+    onValueChange?.(next);
+    return next;
+  });
 
   return (
     <div className={`${css["range-input-container"]} ${className}`} {...props}>
