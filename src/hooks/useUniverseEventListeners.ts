@@ -829,29 +829,17 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
 
           if (Math.abs(smoothedMoveX) > 0.001) {
             if (smoothedMoveX > 0) {
-              moveCamera(
-                'left',
-                Math.abs(smoothedMoveX) * speedRefectorRef.current,
-              );
+              moveCamera('left', Math.abs(smoothedMoveX) * speedRefectorRef.current);
             } else {
-              moveCamera(
-                'right',
-                Math.abs(smoothedMoveX) * speedRefectorRef.current,
-              );
+              moveCamera('right', Math.abs(smoothedMoveX) * speedRefectorRef.current);
             }
           }
 
           if (Math.abs(smoothedMoveY) > 0.001) {
             if (smoothedMoveY > 0) {
-              moveCamera(
-                'up',
-                Math.abs(smoothedMoveY) * speedRefectorRef.current,
-              );
+              moveCamera('up', Math.abs(smoothedMoveY) * speedRefectorRef.current);
             } else {
-              moveCamera(
-                'down',
-                Math.abs(smoothedMoveY) * speedRefectorRef.current,
-              );
+              moveCamera('down', Math.abs(smoothedMoveY) * speedRefectorRef.current);
             }
           }
         }
@@ -862,10 +850,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
           if (smoothedZoom > 0.001) {
             moveCamera('forward', smoothedZoom * speedRefectorRef.current);
           } else if (smoothedZoom < -0.001) {
-            moveCamera(
-              'backward',
-              Math.abs(smoothedZoom) * speedRefectorRef.current,
-            );
+            moveCamera('backward', Math.abs(smoothedZoom) * speedRefectorRef.current);
           }
         }
 

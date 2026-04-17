@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import type { MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
 import * as THREE from 'three';
 import { useCamera } from '../../../hooks/contexts/CameraContext';
+import { useScene } from '../../../hooks/contexts/SceneContext';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -35,6 +36,7 @@ export function InputHandler({
   onAccelerometerChange,
 }: InputHandlerProps) {
   const { cameraRef } = useCamera();
+  const { needsRenderRef } = useScene();
   const filteredOrientation = useRef({ alpha: 0, beta: 0, gamma: 0 });
 
   // Pre-allocated Three.js objects to avoid per-event allocations at ~60 Hz
@@ -81,7 +83,10 @@ export function InputHandler({
       if (cameraRef.current && cameraRef.current.quaternion.dot(_q.current) < 0) {
         _q.current.set(-_q.current.x, -_q.current.y, -_q.current.z, -_q.current.w);
       }
-      if (cameraRef.current) cameraRef.current.quaternion.copy(_q.current);
+      if (cameraRef.current) {
+        cameraRef.current.quaternion.copy(_q.current);
+        needsRenderRef.current = true;
+      }
 
       onAccelerometerChange?.({
         x: beta.toFixed(2),

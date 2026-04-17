@@ -85,9 +85,11 @@ export default function UniverseNavigator({
       if (!renderer || !container) return;
 
       const rect = container.getBoundingClientRect();
+      const canvas = renderer.domElement;
+      const canvasRect = canvas.getBoundingClientRect();
       const dpr = renderer.getPixelRatio();
-      const x = Math.round(rect.left * dpr);
-      const y = Math.round((window.innerHeight - rect.bottom) * dpr);
+      const x = Math.round((rect.left - canvasRect.left) * dpr);
+      const y = Math.round((canvasRect.bottom - rect.bottom) * dpr);
       const w = Math.round(rect.width * dpr);
       const h = Math.round(rect.height * dpr);
 

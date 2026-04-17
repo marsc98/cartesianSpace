@@ -121,8 +121,9 @@ export function useSceneActions({ setRulerIsActive, rulerIsActive }: UseSceneAct
         new THREE.Quaternion().setFromAxisAngle(pitchAxis, deltaY * s),
       );
       cam.quaternion.normalize();
+      needsRenderRef.current = true;
     },
-    [cameraRef],
+    [cameraRef, needsRenderRef],
   );
 
   // ── Cena ──────────────────────────────────────────────────────────────────
