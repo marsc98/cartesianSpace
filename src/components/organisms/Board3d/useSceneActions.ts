@@ -4,6 +4,7 @@ import { useScene } from '../../../hooks/contexts/SceneContext';
 import { useElements } from '../../../hooks/contexts/ElementsContext';
 import { useCamera } from '../../../hooks/contexts/CameraContext';
 import { useDrawing } from '../../../hooks/contexts/DrawingContext';
+import { useSession } from '../../../hooks/contexts/SessionContext';
 import { createRealisticStarfield, disposeMultipleObjects, drawRuler } from './spaceElements';
 
 // ─── Types ────────────────────────────────────────────────────────────────
@@ -25,6 +26,7 @@ export function useSceneActions({ setRulerIsActive, rulerIsActive }: UseSceneAct
   const { cameraRef, raycasterRef, mouseRef, speedRefectorRef, keysHeldRef } = useCamera();
   const { editingArrowsRef, lastIntersected, originalColor } = useElements();
   const { colorRef, rulerRef } = useDrawing();
+  const { isMobile } = useSession();
 
   // Planos reutilizados para reposição de elementos (estáveis entre renders)
   const planeXZ = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
@@ -112,13 +114,14 @@ export function useSceneActions({ setRulerIsActive, rulerIsActive }: UseSceneAct
     (deltaX: number, deltaY: number) => {
       if (!cameraRef.current) return;
       const cam = cameraRef.current;
-      const s = 0.002;
+      const sx = 0.0018;
+      const sy = 0.0015;
       cam.quaternion.premultiply(
-        new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), deltaX * s),
+        new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), deltaX * sx),
       );
       const pitchAxis = new THREE.Vector3(1, 0, 0).applyQuaternion(cam.quaternion);
       cam.quaternion.premultiply(
-        new THREE.Quaternion().setFromAxisAngle(pitchAxis, deltaY * s),
+        new THREE.Quaternion().setFromAxisAngle(pitchAxis, deltaY * sy),
       );
       cam.quaternion.normalize();
       needsRenderRef.current = true;
@@ -264,7 +267,8 @@ export function useSceneActions({ setRulerIsActive, rulerIsActive }: UseSceneAct
     rulerRef.current.active = !rulerRef.current.active;
     setRulerIsActive(!rulerIsActive);
     if (rulerRef.current.active) {
-      rulerRef.current.object = drawRuler(cameraRef, sceneRef, colorRef);
+      rulerRef.current.object = drawRuler(cameraRef, sceneRef, colorRef, { isMobile });
+      needsRenderRef.current = true;
       return;
     }
     const obj = rulerRef.current.object;
@@ -275,7 +279,8 @@ export function useSceneActions({ setRulerIsActive, rulerIsActive }: UseSceneAct
       if (m) (Array.isArray(m) ? m : [m]).forEach((x: any) => x.dispose());
     });
     rulerRef.current.object = null;
-  }, [rulerRef, rulerIsActive, setRulerIsActive, cameraRef, sceneRef, colorRef]);
+    needsRenderRef.current = true;
+  }, [rulerRef, rulerIsActive, setRulerIsActive, cameraRef, sceneRef, colorRef, needsRenderRef, isMobile]);
 
   // ── Stars ─────────────────────────────────────────────────────────────────
 

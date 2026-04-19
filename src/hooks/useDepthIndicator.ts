@@ -32,8 +32,8 @@ export function useDepthIndicator(
     camera.getWorldDirection(dir);
     group.position.copy(camera.position).addScaledVector(dir, value);
     group.quaternion.copy(camera.quaternion);
-    // Escala proporcional à distância para ocupar fração consistente da tela
-    group.scale.setScalar(value / 10);
+    // Escala fixa (ou com crescimento menor) para não cancelar a perspectiva
+    group.scale.setScalar(4);
   }, [cameraRef]);
 
   const onDistanceChange = useCallback((value: number) => {

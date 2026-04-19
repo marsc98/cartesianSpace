@@ -64,7 +64,7 @@ export const DrawingProvider = ({ children }: { children: React.ReactNode }) => 
   useEffect(() => {
     const storedColor = safeGetValidated('color', isValidColor);
     const storedSize = safeGetParsed('size', isValidSize);
-    const storedDistance = safeGetParsed('drawDistance', (v): v is number => typeof v === 'number' && isFinite(v) && v >= 5 && v <= 200);
+    const storedDistance = safeGetParsed('drawDistance', (v): v is number => typeof v === 'number' && isFinite(v) && v >= 10 && v <= 100);
     if (storedColor !== null) colorRef.current = storedColor;
     if (storedSize !== null) sizeRef.current = storedSize;
     if (storedDistance !== null) drawDistanceRef.current = storedDistance;

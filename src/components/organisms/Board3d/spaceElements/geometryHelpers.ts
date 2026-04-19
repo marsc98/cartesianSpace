@@ -2248,15 +2248,17 @@ export function drawPositionIndicator(element, sceneRef, config = {}) {
 }
 
 export function drawRuler(cameraRef, sceneRef, colorRef, config = {}) {
-  // Configurações padrão da régua
+  const isMobile = config.isMobile || false;
+
+  // Configurações dinâmicas da régua
   const defaultConfig = {
-    length: 20, // Comprimento total da régua
-    width: 2, // Largura da régua
-    thickness: 0.02, // Espessura dos traços
-    majorTickSpacing: 2, // Espaçamento entre traços maiores
-    minorTickSpacing: 0.5, // Espaçamento entre traços menores
-    majorTickHeight: 0.3, // Altura dos traços maiores
-    minorTickHeight: 0.15, // Altura dos traços menores
+    length: isMobile ? 12 : 20, 
+    width: 2, // Retorno da largura fixa para não afastar a borda esquerda para a direita
+    thickness: 0.02, 
+    majorTickSpacing: isMobile ? 1 : 2, 
+    minorTickSpacing: isMobile ? 0.25 : 0.5, 
+    majorTickHeight: isMobile ? 0.2 : 0.3, 
+    minorTickHeight: isMobile ? 0.1 : 0.15, 
   };
 
   // Mescla configurações padrão com as fornecidas
@@ -2266,9 +2268,9 @@ export function drawRuler(cameraRef, sceneRef, colorRef, config = {}) {
   const parsedColor = new THREE.Color('#888888');
 
   // POSIÇÕES RELATIVAS À CÂMERA (coordenadas locais)
-  const rulerZ = -10; // 10 unidades à frente da câmera
-  const rulerY = -2; // 2 unidades abaixo da câmera
-  const rulerX = 0; // Centralizada na câmera
+  const rulerZ = -10; 
+  const rulerY = isMobile ? -3.5 : -2; 
+  const rulerX = isMobile ? -0.5 : 0; // Desloca levemente para a esquerda no mobile para ajustar centro de tela
 
   // Grupo para organizar todos os elementos da régua
   const rulerGroup = new THREE.Group();
