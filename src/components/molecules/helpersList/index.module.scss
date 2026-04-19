@@ -44,23 +44,19 @@
     bottom: .3rem;
     left: .3rem;
     flex-direction: row;
-    transition: clip-path 0.3s ease 0.1s;
-    clip-path: inset(0 0% 0 0);
-
-    &[data-open="false"] {
-      clip-path: inset(0 100% 0 0);
-    }
   }
   &.blc {  // bottom-left-column
     bottom: .3rem;
     left: .3rem;
     flex-direction: column;
-    transition: clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    clip-path: inset(0 0 0 0);
+  }
 
-    &[data-open="false"] {
-      clip-path: inset(calc(100% - 3.5rem) 0 0 0);
-    }
+  // BOTTOM + CENTER
+  &.bcr { // bottom-center-row
+    bottom: .3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    flex-direction: row;
   }
 
   // BOTTOM + RIGHT
@@ -93,10 +89,6 @@
 
     &[data-list-open="true"] {
       transform: rotate(45deg);
-    }
-
-    &[data-open="false"] {
-      pointer-events: none;
     }
   }
 }

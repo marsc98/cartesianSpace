@@ -49,7 +49,6 @@ interface HelpersListProps {
   position?: string;
   jump?: string;
   isMobile?: boolean;
-  hasMobileChange?: boolean;
 }
 
 const HelpersList = ({
@@ -60,7 +59,6 @@ const HelpersList = ({
   position,
   jump,
   isMobile,
-  hasMobileChange,
 }: HelpersListProps) => {
   const [jumps, setJumps] = useState<Record<string, string>>({});
 
@@ -75,15 +73,12 @@ const HelpersList = ({
     }
   }, [jump]);
 
-  const isOpen = !isMobile || listOpen;
-
   return (
     <ul
       key={id}
       className={`${css['helpers-list-container']} ${css[position]}`}
       style={jumps || {}}
       data-position={position}
-      data-open={isOpen}
     >
       {list?.map((helper) => {
         if (!helper.visible) return null;
@@ -92,7 +87,6 @@ const HelpersList = ({
             key={helper.iconName}
             className={css['helper-item']}
             data-active={helper.active}
-            data-open={isOpen}
           >
             <IconButton
               iconName={helper.iconName}
@@ -104,21 +98,6 @@ const HelpersList = ({
           </li>
         );
       })}
-      {isMobile && hasMobileChange && (
-        <li
-          data-list-open={listOpen}
-          key={'plus_button'}
-          className={css['helper-item']}
-          data-active={true}
-        >
-          <IconButton
-            iconName={'plus'}
-            size="m"
-            hoverText={'Ver ferramentas'}
-            onClick={() => setListOpen(!listOpen)}
-          />
-        </li>
-      )}
     </ul>
   );
 };
