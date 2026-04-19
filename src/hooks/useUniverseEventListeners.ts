@@ -613,8 +613,10 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
         }
 
         const rect = canvas.getBoundingClientRect();
-        mouseRef.current.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-        mouseRef.current.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        const cw = canvas.clientWidth || rect.width;
+        const ch = canvas.clientHeight || rect.height;
+        mouseRef.current.x = ((e.clientX - rect.left) / cw) * 2 - 1;
+        mouseRef.current.y = -((e.clientY - rect.top) / ch) * 2 + 1;
         raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
 
         cameraRef.current.getWorldDirection(_planeNormalRef.current);
@@ -701,8 +703,10 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
       }
 
       const rect = canvas.getBoundingClientRect();
-      mouseRef.current.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      mouseRef.current.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      const cw = canvas.clientWidth || rect.width;
+      const ch = canvas.clientHeight || rect.height;
+      mouseRef.current.x = ((e.clientX - rect.left) / cw) * 2 - 1;
+      mouseRef.current.y = -((e.clientY - rect.top) / ch) * 2 + 1;
 
       if (raycasterRef.current && cameraRef.current) {
         raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
@@ -829,17 +833,17 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
 
           if (Math.abs(smoothedMoveX) > 0.001) {
             if (smoothedMoveX > 0) {
-              moveCamera('left', Math.abs(smoothedMoveX) * speedRefectorRef.current);
+              moveCamera('left', Math.abs(smoothedMoveX));
             } else {
-              moveCamera('right', Math.abs(smoothedMoveX) * speedRefectorRef.current);
+              moveCamera('right', Math.abs(smoothedMoveX));
             }
           }
 
           if (Math.abs(smoothedMoveY) > 0.001) {
             if (smoothedMoveY > 0) {
-              moveCamera('up', Math.abs(smoothedMoveY) * speedRefectorRef.current);
+              moveCamera('up', Math.abs(smoothedMoveY));
             } else {
-              moveCamera('down', Math.abs(smoothedMoveY) * speedRefectorRef.current);
+              moveCamera('down', Math.abs(smoothedMoveY));
             }
           }
         }
@@ -848,10 +852,10 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
           const smoothedZoom = distanceChange * zoomSensitivity;
 
           if (smoothedZoom > 0.001) {
-            moveCamera('forward', smoothedZoom * speedRefectorRef.current);
-          } else if (smoothedZoom < -0.001) {
-            moveCamera('backward', Math.abs(smoothedZoom) * speedRefectorRef.current);
-          }
+              moveCamera('forward', smoothedZoom);
+            } else if (smoothedZoom < -0.001) {
+              moveCamera('backward', Math.abs(smoothedZoom));
+            }
         }
 
         controls.lastMidX = currMidX;
@@ -895,9 +899,10 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
 
       if (e.touches.length === 1) {
         const rect = canvas.getBoundingClientRect();
-        mouseRef.current.x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
-        mouseRef.current.y =
-          -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+        const cw = canvas.clientWidth || rect.width;
+        const ch = canvas.clientHeight || rect.height;
+        mouseRef.current.x = ((touch.clientX - rect.left) / cw) * 2 - 1;
+        mouseRef.current.y = -((touch.clientY - rect.top) / ch) * 2 + 1;
 
         if (
           searchingFacesRef.current &&
@@ -917,22 +922,26 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
         }
       }
 
-      handleBoardMovement();
-
       if (
         e.touches.length === 1 &&
-        controls.mouseDown &&
-        !isDraggingRef.current &&
-        !searchingFacesRef.current &&
         !drawingRef.current &&
-        !elementsRef.current.active
+        !elementsRef.current.active &&
+        !isDraggingRef.current
       ) {
-          const deltaX = touch.clientX - controls.lastX;
-          const deltaY = touch.clientY - controls.lastY;
-          handleCameraDrag(deltaX, deltaY);
-          controls.lastX = touch.clientX;
-          controls.lastY = touch.clientY;
+        const deltaX = touch.clientX - controls.lastX;
+        const deltaY = touch.clientY - controls.lastY;
+
+        if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+          controls.mouseMoving = true;
+        }
+
+        rotateCamera(deltaX, deltaY);
       }
+
+      controls.lastX = touch.clientX;
+      controls.lastY = touch.clientY;
+
+      handleBoardMovement();
 
       e.preventDefault();
     },
@@ -1136,6 +1145,9 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY,
         );
+        controls.lastMidX = undefined;
+        controls.lastMidY = undefined;
+        controls.lastDistance = undefined;
       }
 
       e.preventDefault();
@@ -1163,7 +1175,13 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
         editingElementRef.current.active = false;
       }
 
-      controlsRef.current.mouseDown = false;
+      if (e.touches.length === 0) {
+        controlsRef.current.mouseDown = false;
+      } else if (e.touches.length === 1) {
+        const remaining = e.touches[0];
+        controlsRef.current.lastX = remaining.clientX;
+        controlsRef.current.lastY = remaining.clientY;
+      }
 
       // if (isDraggingRef.current) {
       //   // stopDragging();
@@ -1320,9 +1338,10 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
       }
 
       if (e.touches.length < 2) {
-        controlsRef.current.touchStartDistance = null;
-        controlsRef.current.lastMidX = null;
-        controlsRef.current.lastMidY = null;
+        controlsRef.current.touchStartDistance = undefined;
+        controlsRef.current.lastMidX = undefined;
+        controlsRef.current.lastMidY = undefined;
+        controlsRef.current.lastDistance = undefined;
       }
 
       controlsRef.current.mouseDown = false;
@@ -1358,10 +1377,9 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
     if (!canvas) return;
 
     let lastWheel = 0;
+    let lastTouchMove = 0;
     let rafId: number | null = null;
-    let rafTouchId: number | null = null;
 
-    // RAF-based throttle: processa um evento por frame de animação, sem descartar pontos
     const throttledMouseMove = (e: MouseEvent) => {
       needsRenderRef.current = true;
       if (rafId !== null) return;
@@ -1380,12 +1398,11 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
     };
 
     const throttledTouchMove = (e: TouchEvent) => {
+      const now = performance.now();
+      if (now - lastTouchMove < 32) return;
+      lastTouchMove = now;
       needsRenderRef.current = true;
-      if (rafTouchId !== null) return;
-      rafTouchId = requestAnimationFrame(() => {
-        handleTouchMove(e);
-        rafTouchId = null;
-      });
+      handleTouchMove(e);
     };
 
     const wrappedMouseDown = (e: MouseEvent) => { needsRenderRef.current = true; handleMouseDown(e); };
@@ -1405,7 +1422,6 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
 
     return () => {
       if (rafId !== null) cancelAnimationFrame(rafId);
-      if (rafTouchId !== null) cancelAnimationFrame(rafTouchId);
       canvas.removeEventListener('mousedown', wrappedMouseDown);
       canvas.removeEventListener('mouseup', wrappedMouseUp);
       canvas.removeEventListener('mousemove', throttledMouseMove);
