@@ -7,6 +7,7 @@ import { useScene } from '../../../hooks/contexts/SceneContext';
 import { useSession } from '../../../hooks/contexts/SessionContext';
 import { useDrawingRefs } from '../../../hooks/contexts/DrawingContext';
 import { useDepthIndicator } from '../../../hooks/useDepthIndicator';
+import { useUnits } from '../../../hooks/contexts/UnitsContext';
 import type { NotificationData } from '../../../hooks/useNotifications';
 import css from './index.module.scss';
 
@@ -71,17 +72,19 @@ export function ToolsManager({
   const { sceneRef, rendererRef, needsRenderRef } = useScene();
   const { drawDistanceRef } = useDrawingRefs();
   const { onDistanceChange } = useDepthIndicator(cameraRef, sceneRef, needsRenderRef);
+  const { distanceUnit, velocityUnit } = useUnits();
 
   return (
     <>
       {/* ── Toolbars ──────────────────────────────────────────────────────── */}
       <HelpersList
-        key="bottomRightHelpers"
-        id="bottomRightHelpers"
+        key="rightHelpers"
+        id="rightHelpers"
         listOpen={listOpen}
         setListOpen={setListOpen}
         list={bottomRightHelpers}
-        position={isMobile ? 'brc' : 'brr'}
+        position='brc'
+        jump={isMobile ? "bottom-15" : 'bottom-25'}
       />
       <HelpersList
         key="topRightHelpers"
@@ -92,14 +95,14 @@ export function ToolsManager({
         position="trr"
       />
       <HelpersList
-        key="bottomLeftHelpers"
-        id="bottomLeftHelpers"
+        key="leftHelpers"
+        id="leftHelpers"
         isMobile={isMobile}
         listOpen={listOpen}
         setListOpen={setListOpen}
-        hasMobileChange={true}
         list={bottomLeftHelpers}
         position="blc"
+        jump={isMobile ? "bottom-17" : "bottom-25"}
       />
       <HelpersList
         key="actionHelpers"
@@ -108,8 +111,8 @@ export function ToolsManager({
         listOpen={listOpen}
         setListOpen={setListOpen}
         list={actionHelpers}
-        position="blr"
-        jump="left-4"
+        position={isMobile ? "blc" : "bcr"}
+        jump={isMobile ? "bottom-5" : undefined}
       />
       <HelpersList
         key="sceneHelpers"
@@ -132,16 +135,17 @@ export function ToolsManager({
       {/* ── Controle de distância de interação ───────────────────────────── */}
       <div
         className={css['range-input-container']}
-        style={{ left: isMobile ? 0 : '-3.5rem' }}
+        style={{ left: "5px" }}
         title="Distância"
       >
         <RangeInput
           id="distanceSetter"
           isMobile={isMobile}
-          min={5}
-          max={200}
+          min={10}
+          max={100}
+          label={distanceUnit}
           sizeRef={drawDistanceRef}
-          shouldRotate={true}
+          shouldRotate={false}
           onValueChange={onDistanceChange}
         />
       </div>
@@ -149,16 +153,17 @@ export function ToolsManager({
       {/* ── Controle de velocidade da câmera ──────────────────────────────── */}
       <div
         className={css['range-input-container']}
-        style={{ right: !isMobile ? window?.innerWidth / 2 : undefined }}
+        style={{ right: isMobile ? 0 : '-3.5rem', left: 'auto' }}
         title="Velocidade"
       >
         <RangeInput
           id="sizeSetter"
-          isMobile={isMobile}
-          min={1}
-          max={40}
-          sizeRef={speedRefectorRef}
           shouldRotate={true}
+          isMobile={isMobile}
+          min={10}
+          max={100}
+          label={velocityUnit}
+          sizeRef={speedRefectorRef}
         />
       </div>
 
@@ -166,7 +171,7 @@ export function ToolsManager({
       {!notification && !isLoading && (
         <UniverseNavigator
           isMobile={isMobile}
-          mainCamera={cameraRef.current}
+          mainCamera={cameraRef}
           mainRenderer={rendererRef}
           renderFnRef={navigatorRenderFnRef}
           onClick={onResetCamera}

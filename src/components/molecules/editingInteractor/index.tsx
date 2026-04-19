@@ -529,8 +529,8 @@ const EditingInteractor = ({
       <div className={css['coordinate-system__canvas-container']}>
         <canvas
           ref={canvasRef}
-          width={isMobile ? 300 : 500}
-          height={isMobile ? 300 : 500}
+          width={isMobile ? 100 : 500}
+          height={isMobile ? 100 : 500}
           className={css['coordinate-system__canvas']}
           onMouseMove={handleMouseMove}
           onMouseDown={handleMouseDown}

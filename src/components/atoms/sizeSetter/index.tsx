@@ -63,7 +63,7 @@ export default function SizeSetter({ sizeRef, colorRef }: SizeSetterProps) {
       <div className={css["size-info"]}>
         <span>Tamanho: {" "}</span>
         <div>
-          <span style={{ color: colorRef.current || "#fffffff" }}>{size}</span> Un
+          <span style={{ color: colorRef.current || "#fffffff" }}>{size.toFixed(2).replace(".",",")}</span> Un
         </div>
       </div>
 
@@ -71,13 +71,13 @@ export default function SizeSetter({ sizeRef, colorRef }: SizeSetterProps) {
       <div className={css["range-container"]}>
         <RangeInput
           setElementSize={handleSizeChange}
-          label="Tamanho da caneta:"
           id="pen-size-range"
           sizeRef={sizeRef}
           min={5}
           max={75}
           onChange={() => { }}
           colorRef={colorRef}
+          shouldRotate={true}
         />
       </div>
     </div>
