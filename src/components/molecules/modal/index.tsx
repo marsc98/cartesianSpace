@@ -393,9 +393,8 @@ function Modal({ setIsOwnCursorActive, modalIsOpenRef, id, modalState, writingRe
       <div className={css['modal-content-wrapper']}>
         {!showSecondary && (
           <div
-            className={`${css['modal-content']} ${css['card']} ${
-              direction === 'forward' ? css['scale-in'] : css['scale-in']
-            }`}
+            className={`${css['modal-content']} ${css['card']} ${direction === 'forward' ? css['scale-in'] : css['scale-in']
+              }`}
             data-is-closing={isClosing}
           >
             {content && React.isValidElement(content) &&

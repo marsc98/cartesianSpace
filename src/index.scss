@@ -1,6 +1,8 @@
 @use "./utils/styles/vars" as *;
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
 }
@@ -10,11 +12,12 @@
   margin: 0;
   padding: 0;
 
-  scroll-behavior: smooth;  
+  scroll-behavior: smooth;
   color: $text-color;
 }
 
-html, body {
+html,
+body {
   line-height: 1;
 
   font-family: "Space Grotesk", sans-serif;
@@ -31,7 +34,8 @@ html, body {
 
 }
 
-button, input {
+button,
+input {
   background-color: transparent;
   cursor: pointer;
   background-color: transparent;
@@ -40,7 +44,8 @@ button, input {
   font-family: "Space Grotesk", sans-serif;
 }
 
-ul, ol {
+ul,
+ol {
   margin: 0;
   list-style: none;
 }
@@ -51,7 +56,10 @@ ul, ol {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }

@@ -23,12 +23,12 @@ const CoordinatesProvider = ({ children }) => {
 };
 
 const useCoordinates = () => {
-    const context = useContext(CoordinatesContext);
-    if (!context) {
-      throw new Error('useCoordinates deve ser usado dentro de um CoordinatesProvider');
-    }
-    return context;
-  };
+  const context = useContext(CoordinatesContext);
+  if (!context) {
+    throw new Error('useCoordinates deve ser usado dentro de um CoordinatesProvider');
+  }
+  return context;
+};
 
 // 3. Exportação do Context e do Provider
 export { CoordinatesProvider, useCoordinates };
