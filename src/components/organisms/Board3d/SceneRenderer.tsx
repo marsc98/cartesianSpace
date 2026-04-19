@@ -62,7 +62,8 @@ export function SceneRenderer({
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     rendererRef.current = renderer;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    const { offsetWidth: initW, offsetHeight: initH } = mountRef.current;
+    renderer.setSize(initW, initH);
     mountRef.current.appendChild(renderer.domElement);
 
     // ── Raycaster ──────────────────────────────────────────────────────────
@@ -85,7 +86,7 @@ export function SceneRenderer({
       needsRenderRef.current = false;
       // Limpa viewport/scissor antes do render principal
       renderer.setScissorTest(false);
-      renderer.setViewport(0, 0, renderer.domElement.width, renderer.domElement.height);
+      renderer.setViewport(0, 0, renderer.domElement.clientWidth, renderer.domElement.clientHeight);
       renderer.render(scene, camera);
       // Gizmo de navegação (scissor no mesmo contexto WebGL)
       navigatorRenderFnRef.current?.();
@@ -100,19 +101,22 @@ export function SceneRenderer({
     animate();
 
     // ── Resize ─────────────────────────────────────────────────────────────
-    const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const { inlineSize: w, blockSize: h } = entry.contentBoxSize[0];
+      camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(w, h);
       needsRenderRef.current = true;
-    };
-    window.addEventListener('resize', handleResize);
+    });
+    resizeObserver.observe(mountRef.current);
 
     // ── Cleanup ────────────────────────────────────────────────────────────
     return () => {
       cancelAnimationFrame(animationFrameRef.current ?? 0);
-      window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
 
       if (mountRef.current && renderer.domElement) {
         try {

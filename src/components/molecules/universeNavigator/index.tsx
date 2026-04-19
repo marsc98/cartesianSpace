@@ -87,13 +87,14 @@ export default function UniverseNavigator({
       const rect = container.getBoundingClientRect();
       const canvas = renderer.domElement;
       const canvasRect = canvas.getBoundingClientRect();
-      const dpr = renderer.getPixelRatio();
-      const x = Math.round((rect.left - canvasRect.left) * dpr);
-      const y = Math.round((canvasRect.bottom - rect.bottom) * dpr);
-      const w = Math.round(rect.width * dpr);
-      const h = Math.round(rect.height * dpr);
+      const x = Math.round(rect.left - canvasRect.left);
+      const y = Math.round(canvasRect.bottom - rect.bottom);
+      const w = Math.round(rect.width);
+      const h = Math.round(rect.height);
 
-      group.setRotationFromQuaternion(mainCamera.quaternion);
+      const camera = mainCamera.current;
+      if (!camera) return;
+      group.setRotationFromQuaternion(camera.quaternion);
 
       const savedAutoClear = renderer.autoClear;
       renderer.autoClear = false;
@@ -107,8 +108,8 @@ export default function UniverseNavigator({
       renderer.autoClear = savedAutoClear;
       renderer.setScissorTest(false);
       const el = renderer.domElement;
-      renderer.setScissor(0, 0, el.width, el.height);
-      renderer.setViewport(0, 0, el.width, el.height);
+      renderer.setScissor(0, 0, el.clientWidth, el.clientHeight);
+      renderer.setViewport(0, 0, el.clientWidth, el.clientHeight);
     };
 
     return () => {
@@ -121,7 +122,7 @@ export default function UniverseNavigator({
         }
       });
     };
-  }, [mainCamera, mainRenderer, renderFnRef]);
+  }, [mainRenderer, renderFnRef]);
 
   const size = isMobile ? '4.5rem' : '6rem';
 

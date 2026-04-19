@@ -40,6 +40,7 @@ import { addCubeToCartesianSpace } from './cartesianSpaceElements';
 import { safeGetItem } from '../../../utils/storage';
 import { useSceneActions } from './useSceneActions';
 import { useModalHandlers } from './useModalHandlers';
+import css from './index.module.scss';
 
 // ── Componentes ───────────────────────────────────────────────────────────
 import { AppLoader } from '../../molecules/appLoader';
@@ -350,6 +351,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
   return (
     <main
       id="universe"
+      className={css['universe']}
       aria-label="Quadro 3D interativo"
       onMouseMove={handleMouseMove}
       onTouchMove={handleTouchMove}
@@ -378,7 +380,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
       {/* Canvas mount point do WebGL renderer */}
       <div
         id="canvas-container"
-        style={{ width: '100%', height: '100vh', overflow: 'hidden' }}
+        style={{ width: '100%', height: '100%', overflow: 'hidden' }}
         ref={mountRef}
       />
 
