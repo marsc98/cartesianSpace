@@ -16,49 +16,65 @@ interface RangeInputProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const RangeInput = ({ isMobile, setElementSize, onValueChange, label, id, sizeRef, min, max, colorRef, className, shouldRotate = false, ...props }: RangeInputProps) => {
-  const [size, setSize] = useState(sizeRef.current || 20);
+  const [size, setSize] = useState<string | number>(sizeRef.current || 20);
 
   useEffect(() => {
-    sizeRef.current = Number(size);
+    sizeRef.current = Number(size) || 0;
   }, [size, sizeRef]);
 
-  const handleChange = (value: string | number) => {
-    if (value === '') {
-      setSize(0);
-      setElementSize?.(0);
-      onValueChange?.(0);
-      return;
-    }
+  const handleChange = (value: string) => {
+    setSize(value);
 
-    const numValue = parseInt(String(value), 10);
+    const numValue = parseInt(value, 10);
     if (!isNaN(numValue) && numValue >= min && numValue <= max) {
       setElementSize?.(numValue);
       onValueChange?.(numValue);
-      setSize(numValue);
     }
   };
 
+  const handleBlur = () => {
+    let numValue = parseInt(String(size), 10);
+    if (isNaN(numValue)) numValue = min;
+    const clamped = Math.max(min, Math.min(max, numValue));
+    setSize(clamped);
+    setElementSize?.(clamped);
+    onValueChange?.(clamped);
+  };
+
   const decrease = () => setSize(prev => {
-    const next = Math.max(min, prev - 1);
+    const next = Math.max(min, Number(prev) - 1);
+    setElementSize?.(next);
     onValueChange?.(next);
     return next;
   });
+
   const increase = () => setSize(prev => {
-    const next = Math.min(max, prev + 1);
+    const next = Math.min(max, Number(prev) + 1);
+    setElementSize?.(next);
     onValueChange?.(next);
     return next;
   });
 
   return (
     <div className={`${css["range-input-container"]} ${className}`} {...props}>
-      {/* {label && (
-        <label htmlFor={id} className={css["input-label"]}>
-          {label} {size}
+      {label && (
+        <label htmlFor={`${id}-number`} className={css["input-label"]}>
+          <input
+            id={`${id}-number`}
+            className={css["transparent-number-input"]}
+            type="number"
+            min={min}
+            max={max}
+            value={size}
+            onChange={e => handleChange(e.target.value)}
+            onBlur={handleBlur}
+          />
+          <span className={css["label-text"]}>{label}</span>
         </label>
-      )} */}
+      )}
 
       <div className={css["range-controls"]}>
-        <button style={{ rotate: shouldRotate && '90deg' }} type="button" onClick={decrease} className={css["range-btn"]}>-</button>
+        <button style={{ rotate: shouldRotate ? '90deg' : undefined }} type="button" onClick={decrease} className={css["range-btn"]}>-</button>
         <input
           className={css["range-input"]}
           type="range"
@@ -69,7 +85,7 @@ const RangeInput = ({ isMobile, setElementSize, onValueChange, label, id, sizeRe
           value={size}
           onChange={e => handleChange(e.target.value)}
         />
-        <button type="button" onClick={increase} className={css["range-btn"]}>+</button>
+        <button style={{ rotate: shouldRotate ? '90deg' : undefined }} type="button" onClick={increase} className={css["range-btn"]}>+</button>
       </div>
     </div>
   );
