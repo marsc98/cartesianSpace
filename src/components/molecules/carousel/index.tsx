@@ -63,7 +63,6 @@ interface CarouselProps {
   colorRef: React.MutableRefObject<string>;
   label?: string;
   visibleColumns?: number;
-  onCustomButtonClick?: () => void;
 }
 
 function Carousel({
@@ -78,7 +77,6 @@ function Carousel({
   colorRef,
   label,
   visibleColumns = 3,
-  onCustomButtonClick,
 }: CarouselProps) {
   const [selectedId, setSelectedId] = useState(selected ?? null);
   const [targetIndex, setTargetIndex] = useState(0);
@@ -87,14 +85,16 @@ function Carousel({
   const isDragging = useRef(false);
   const dragStartX = useRef(0);
   const dragStartIndex = useRef(0);
+  const lastTime = useRef(0);
+  const lastPos = useRef(0);
+  const velocity = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const shouldRenderAsList = items.length <= 3;
-  const showCustomButton = items.length > visibleColumns && onCustomButtonClick;
   const totalColumns = items.length;
   const itemWidth = cardSize === 'm' ? 123.6 : 103;
   const itemHeight = cardSize === 'm' ? 144.2 : 123.6;
-  const gapHorizontal = isMobile ? 15 : 20;
+  const gapVertical = isMobile ? 15 : 20;
 
   // Interpolação suave
   useEffect(() => {
@@ -111,16 +111,27 @@ function Carousel({
   }, [targetIndex, shouldRenderAsList]);
 
   // Navegação
-  const goLeft = () => setTargetIndex((prev) => prev - 0.5);
-  const goRight = () => setTargetIndex((prev) => prev + 0.5);
+  const goUp = () => setTargetIndex((prev) => prev - 0.5);
+  const goDown = () => setTargetIndex((prev) => prev + 0.5);
 
   // Mouse drag
   const handleGlobalMouseMove = useCallback((e: MouseEvent) => {
     if (isDragging.current) {
       e.preventDefault();
-      const deltaX = e.clientX - dragStartX.current;
+      const clientY = e.clientY;
+      const deltaY = clientY - dragStartX.current;
       const sensitivity = 0.005;
-      setTargetIndex(dragStartIndex.current - deltaX * sensitivity);
+
+      const currentTime = Date.now();
+      const timeDiff = currentTime - lastTime.current;
+      if (timeDiff > 0) {
+        const diffY = clientY - lastPos.current;
+        velocity.current = diffY / timeDiff;
+      }
+      lastTime.current = currentTime;
+      lastPos.current = clientY;
+
+      setTargetIndex(dragStartIndex.current - deltaY * sensitivity);
     }
   }, []);
 
@@ -129,6 +140,11 @@ function Carousel({
       isDragging.current = false;
       document.removeEventListener('mousemove', handleGlobalMouseMove);
       document.removeEventListener('mouseup', handleGlobalMouseUp);
+
+      if (Math.abs(velocity.current) > 0.1) {
+        setTargetIndex(prev => prev - velocity.current * 0.8);
+      }
+      velocity.current = 0;
     }
   }, [handleGlobalMouseMove]);
 
@@ -136,7 +152,9 @@ function Carousel({
     if (shouldRenderAsList) return;
     e.preventDefault();
     isDragging.current = true;
-    dragStartX.current = e.clientX;
+    dragStartX.current = e.clientY;
+    lastTime.current = Date.now();
+    lastPos.current = e.clientY;
     dragStartIndex.current = targetIndex;
 
     document.addEventListener('mousemove', handleGlobalMouseMove);
@@ -147,9 +165,20 @@ function Carousel({
   const handleGlobalTouchMove = useCallback((e: TouchEvent) => {
     if (isDragging.current && e.touches.length === 1) {
       e.preventDefault();
-      const deltaX = e.touches[0].clientX - dragStartX.current;
+      const clientY = e.touches[0].clientY;
+      const deltaY = clientY - dragStartX.current;
       const sensitivity = 0.005;
-      setTargetIndex(dragStartIndex.current - deltaX * sensitivity);
+
+      const currentTime = Date.now();
+      const timeDiff = currentTime - lastTime.current;
+      if (timeDiff > 0) {
+        const diffY = clientY - lastPos.current;
+        velocity.current = diffY / timeDiff;
+      }
+      lastTime.current = currentTime;
+      lastPos.current = clientY;
+
+      setTargetIndex(dragStartIndex.current - deltaY * sensitivity);
     }
   }, []);
 
@@ -158,6 +187,11 @@ function Carousel({
       isDragging.current = false;
       document.removeEventListener('touchmove', handleGlobalTouchMove);
       document.removeEventListener('touchend', handleGlobalTouchEnd);
+
+      if (Math.abs(velocity.current) > 0.1) {
+        setTargetIndex(prev => prev - velocity.current * 0.8);
+      }
+      velocity.current = 0;
     }
   }, [handleGlobalTouchMove]);
 
@@ -165,7 +199,9 @@ function Carousel({
     if (shouldRenderAsList) return;
     if (e.touches.length === 1) {
       isDragging.current = true;
-      dragStartX.current = e.touches[0].clientX;
+      dragStartX.current = e.touches[0].clientY;
+      lastTime.current = Date.now();
+      lastPos.current = e.touches[0].clientY;
       dragStartIndex.current = targetIndex;
 
       document.addEventListener('touchmove', handleGlobalTouchMove, { passive: false });
@@ -228,11 +264,11 @@ function Carousel({
 
   const titleParts = breakableH3({ label: label });
 
-  const containerWidth = shouldRenderAsList
-    ? `${items.length * (itemWidth + gapHorizontal)}px`
-    : itemWidth * visibleColumns + gapHorizontal * (visibleColumns - 1);
+  const containerHeight = shouldRenderAsList
+    ? `${items.length * (itemHeight + gapVertical)}px`
+    : itemHeight * visibleColumns + gapVertical * (visibleColumns - 1);
 
-  const containerHeight = isMobile ? '130px' : `${itemHeight + 40}px`;
+  const containerWidth = isMobile ? '100%' : `${itemWidth + 40}px`;
 
   return (
     <div className={css['carousel-wrapper']}>
@@ -246,10 +282,10 @@ function Carousel({
       })}
 
       <div className={css['carousel-container']}>
-        {!shouldRenderAsList && (
+        {/*!shouldRenderAsList && (
           <div
-            className={css['nav-button-left']}
-            onClick={goLeft}
+            className={css['nav-button-top']}
+            onClick={goUp}
             onMouseDown={(e) => e.stopPropagation()}
           >
             <div className={css['nav-button-circle']}>
@@ -257,12 +293,12 @@ function Carousel({
                 <Icon
                   name="coolArrow"
                   size="m"
-                  style={{ transform: 'rotate(180deg)', height: '25px' }}
+                  style={{ transform: 'rotate(270deg)', height: '25px' }}
                 />
               </Button>
             </div>
           </div>
-        )}
+        )*/}
 
         <div
           ref={containerRef}
@@ -270,16 +306,14 @@ function Carousel({
           style={{
             width: containerWidth,
             height: containerHeight,
-            marginLeft: shouldRenderAsList ? '0' : '-80px',
-            marginRight: shouldRenderAsList ? '0' : '-80px',
           }}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
         >
           {!shouldRenderAsList && (
             <>
-              <div className={css['gradient-left']} />
-              <div className={css['gradient-right']} />
+              <div className={css['gradient-top']} />
+              <div className={css['gradient-bottom']} />
             </>
           )}
 
@@ -294,8 +328,8 @@ function Carousel({
                   <div
                     key={item.id + i}
                     style={{
-                      marginRight:
-                        i < items.length - 1 ? `${gapHorizontal}px` : '0',
+                      marginBottom:
+                        i < items.length - 1 ? `${gapVertical}px` : '0',
                     }}
                   >
                     <Item
@@ -345,7 +379,7 @@ function Carousel({
                 zIndex = Math.floor(100 + (centerHalf - absPos) * 10);
               }
 
-              const translateX = position * (itemWidth + gapHorizontal);
+              const translateY = position * (itemHeight + gapVertical);
 
               if (absPos > visibleColumns + 2) {
                 return null;
@@ -356,7 +390,7 @@ function Carousel({
                   key={item.id}
                   className={css['carousel-item-wrapper']}
                   style={{
-                    transform: `translate(-50%, -50%) translateX(${translateX}px) translateZ(${translateZ}px) scale(${scale})`,
+                    transform: `translate(-50%, -50%) translateY(${translateY}px) translateZ(${translateZ}px) scale(${scale})`,
                     transition: isDragging.current
                       ? 'none'
                       : 'transform 0.3s ease-out, opacity 0.3s ease-out',
@@ -385,34 +419,20 @@ function Carousel({
           </div>
         </div>
 
-        {!shouldRenderAsList && (
+        {/*!shouldRenderAsList && (
           <div
-            className={css['nav-button-right']}
-            onClick={goRight}
+            className={css['nav-button-bottom']}
+            onClick={goDown}
             onMouseDown={(e) => e.stopPropagation()}
           >
             <div className={css['nav-button-circle']}>
               <Button color="blue" radius={20}>
-                <Icon name="coolArrow" size="s" style={{ height: '25px' }} />
+                <Icon name="coolArrow" size="s" style={{ transform: 'rotate(90deg)', height: '25px' }} />
               </Button>
             </div>
           </div>
-        )}
+        )*/}
       </div>
-
-      {showCustomButton && (
-        <div className={css['custom-button-wrapper']}>
-          <Button
-            size="m"
-            color="orange"
-            iconName="crossword"
-            action={onCustomButtonClick}
-            radius={28}
-          >
-            <Icon size="m" name="crossword" />
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
