@@ -75,9 +75,9 @@ function EditingForm(props) {
     <div className={css['editing-container']}>
       {/* selected={activeCreativityRef.current.id} */}
       <Carousel
-        visibleColumns={isMobile ? 3 : 5}
+        visibleColumns='3'
         selected={true}
-        isMobile={isMobile}
+        isMobile={false}
         active={true}
         handleSelection={(shape) => shape.action()}
         label={''}

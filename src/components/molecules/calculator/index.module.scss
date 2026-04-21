@@ -15,6 +15,8 @@ $color-danger: #ef4444;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  min-width: 0;
 }
 
 // Card da calculadora
@@ -26,6 +28,8 @@ $color-danger: #ef4444;
   padding: 32px;
   max-width: 450px;
   width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 // Título
@@ -95,16 +99,14 @@ $color-danger: #ef4444;
 // Grid de botões
 .buttons-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
-
-  font-size: 80px;
 }
 
 // Responsividade
 @media (max-width: 480px) {
   .calculator-card {
-    padding: 20px;
+    padding: 12px;
   }
 
   .display-input {
@@ -115,12 +117,22 @@ $color-danger: #ef4444;
     font-size: 16px;
   }
 
-  %btn-base {
-    padding: 16px 6px;
-    font-size: 14px;
+  .buttons-grid {
+    gap: 4px;
   }
 
   .btn-function {
-    font-size: 12px;
+    font-size: 11px;
+    padding: 6px 4px;
+  }
+
+  .btn-number {
+    font-size: 13px;
+    padding: 6px 8px;
+  }
+
+  .btn-operator {
+    font-size: 13px;
+    padding: 6px 6px;
   }
 }

@@ -28,6 +28,7 @@ function Button(props: ButtonProps) {
     radius,
     disabled,
     href,
+    className,
   } = props;
 
   const isArcade = type === 'arcade';
@@ -94,7 +95,7 @@ function Button(props: ButtonProps) {
           ref={buttonRef}
           form={formId}
           type={htmlType}
-          className={`${css['button']} ${isRound ? css['button--round'] : ''}`}
+          className={`${css['button']} ${isRound ? css['button--round'] : ''} ${className ?? ''}`}
           data-color={color}
           onClick={action}
           disabled={disabled}
