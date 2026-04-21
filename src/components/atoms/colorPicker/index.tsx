@@ -3,7 +3,9 @@ import css from './index.module.scss';
 import IconButton from '../../molecules/iconButton';
 import { useModal } from '../../../hooks/useModal';
 import ColorGrid from '../colorGrid';
-import { useIsMobile } from '../../../hooks/useIsMobile';
+import { parseColorToHex } from '../../../utils/color';
+import { safeGetParsed, safeSetItem, isValidColor } from '../../../utils/storage';
+import { DEFAULT_COLORS } from './constants';
 
 interface EyeDropper {
   open(): Promise<{ sRGBHex: string }>;
@@ -22,6 +24,11 @@ interface ColorPickerProps {
   className?: string;
 }
 
+export { DEFAULT_COLORS };
+
+const isValidColorArray = (v: unknown): v is string[] =>
+  Array.isArray(v) && v.length > 0 && (v as unknown[]).every(isValidColor);
+
 const ColorPicker = ({
   currentColor,
   setCurrentColor,
@@ -32,52 +39,37 @@ const ColorPicker = ({
   const [selectedColor, setSelectedColor] = useState(
     colorRef.current || '#ff0000',
   );
+  const [inputValue, setInputValue] = useState(colorRef.current || '#ff0000');
   const [opacity, setOpacity] = useState(1);
-  const isMobile = useIsMobile();
+  const [commonColors, setCommonColors] = useState<string[]>(() =>
+    safeGetParsed('cartesian-common-colors', isValidColorArray) ?? DEFAULT_COLORS
+  );
 
   const { addModal, removeModal } = useModal();
 
-  // Cores comuns pré-definidas
-  const [commonColors, setCommonColors] = useState([
-    '#ff0000',
-    '#ff8800',
-    '#ffff00',
-    '#88ff00',
-    '#00ff00',
-    '#00ff88',
-    '#00ffff',
-    '#0088ff',
-    '#0000ff',
-    '#8800ff',
-    '#ff00ff',
-    '#ff0088',
-    '#ffffff',
-    '#cccccc',
-    '#888888',
-    '#444444',
-    '#000000',
-    '#8B4513',
-  ]);
+  useEffect(() => {
+    setInputValue(selectedColor.toUpperCase());
+  }, [selectedColor]);
 
-  // Função para converter RGB para HEX
-  const rgbToHex = (r: number, g: number, b: number): string => {
-    return (
-      '#' +
-      [r, g, b]
-        .map((x) => {
-          const hex = x.toString(16);
-          return hex.length === 1 ? '0' + hex : hex;
-        })
-        .join('')
-    );
+  const handleColorInputCommit = () => {
+    const hex = parseColorToHex(inputValue);
+    if (hex) {
+      setSelectedColor(hex.toUpperCase());
+      setInputValue(hex.toUpperCase());
+    } else {
+      setInputValue(selectedColor.toUpperCase());
+    }
   };
 
-  // Função para selecionar cor comum
-  const handleCommonColorClick = (color: string) => {
-    setSelectedColor(color);
+  const updateCommonColors = (colors: string[]) => {
+    setCommonColors(colors);
+    if (JSON.stringify(colors) === JSON.stringify(DEFAULT_COLORS)) {
+      try { localStorage.removeItem('cartesian-common-colors'); } catch {}
+    } else {
+      safeSetItem('cartesian-common-colors', JSON.stringify(colors));
+    }
   };
 
-  // Função para usar o eyedropper (seletor de cor da tela)
   const handleEyeDropper = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (!window.EyeDropper) {
@@ -91,27 +83,13 @@ const ColorPicker = ({
       const eyeDropper = new window.EyeDropper();
       const result = await eyeDropper.open();
       const color = result.sRGBHex;
-      const rgbaColor: { r: number | null; g: number | null; b: number | null; a: number | null } = { r: null, g: null, b: null, a: null };
-
-      const regex =
-        /rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/;
-      const match = color.match(regex);
-
-      if (match) {
-        rgbaColor.r = parseInt(match[1]);
-        rgbaColor.g = parseInt(match[2]);
-        rgbaColor.b = parseInt(match[3]);
-        rgbaColor.a = parseFloat(match[4]);
-      }
-
-      const hexColor = rgbToHex(rgbaColor.r ?? 0, rgbaColor.g ?? 0, rgbaColor.b ?? 0);
-      setSelectedColor(hexColor);
-    } catch (error) {
-      console.log('Seleção de cor cancelada ou erro:', error);
+      const hex = parseColorToHex(color) ?? color;
+      setSelectedColor(hex.toUpperCase());
+    } catch {
+      // cancelled
     }
   };
 
-  // Função para abrir modal com grid de cores
   const toggleExpanded = (e: React.MouseEvent) => {
     e.preventDefault();
 
@@ -128,10 +106,11 @@ const ColorPicker = ({
           opacity={opacity}
           setOpacity={setOpacity}
           commonColors={commonColors}
-          handleCommonColorClick={handleCommonColorClick}
+          handleCommonColorClick={(color) => setSelectedColor(color)}
           handleEyeDropper={handleEyeDropper}
           finalColor={finalColor}
           copyToClipboard={copyToClipboard}
+          setCommonColors={updateCommonColors}
         />
       ),
       onClose: () => {
@@ -140,13 +119,6 @@ const ColorPicker = ({
     });
   };
 
-  React.useEffect(() => {
-    if (isMobile) {
-      setCommonColors(['#ffffff', '#000000', '#d60000', '#494949']);
-    }
-  }, [isMobile]);
-
-  // Gerar cor final com opacidade
   const finalColor =
     opacity === 1
       ? selectedColor
@@ -157,8 +129,7 @@ const ColorPicker = ({
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(finalColor);
-    } catch (err) {
-      console.error('Erro ao copiar para clipboard:', err);
+    } catch {
       const textArea = document.createElement('textarea');
       textArea.value = finalColor;
       document.body.appendChild(textArea);
@@ -183,43 +154,41 @@ const ColorPicker = ({
   return (
     <div className={[css['color-picker'], className].filter(Boolean).join(' ')}>
       <div className={css['color-picker__compact']}>
-        {/* Círculos de cores comuns */}
-        <div
-          className={css['color-picker__common-colors']}
-          data-is-mobile={isMobile}
-        >
+        <div className={css['color-picker__common-colors']}>
           {commonColors.map((color, index) => (
             <button
               type="button"
               key={index}
               className={`${css['color-picker__color-circle']} ${selectedColor === color ? css['color-picker__color-circle--selected'] : ''}`}
               style={{ backgroundColor: color }}
-              onClick={() => handleCommonColorClick(color)}
+              onClick={() => setSelectedColor(color)}
               title={color.toUpperCase()}
             />
           ))}
         </div>
 
-        <IconButton
-          className={css['color-picker__expand-button']}
-          iconName="palette"
-          onClick={toggleExpanded}
-          size={isMobile ? 'p' : 'm'}
-        />
-
-        {/* Display da cor selecionada compacto */}
         <div className={css['color-picker__compact-display']}>
           <div className={css['color-picker__compact-swatch-container']}>
             <div
               className={css['color-picker__compact-swatch']}
               style={{ backgroundColor: selectedColor }}
             />
-            <span className={css['color-picker__compact-value']}>
-              {selectedColor.toUpperCase()}
-            </span>
+            <input
+              type="text"
+              className={css['color-picker__compact-value']}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onBlur={handleColorInputCommit}
+              onKeyDown={(e) => e.key === 'Enter' && handleColorInputCommit()}
+              spellCheck={false}
+            />
           </div>
           <div className={css['color-picker__actions']}>
-            <IconButton iconName="copy" onClick={copyToClipboard} size="p" />
+            <IconButton
+              iconName="palette"
+              onClick={toggleExpanded}
+              size="p"
+            />
             <IconButton
               iconName="colorize"
               onClick={handleEyeDropper}
