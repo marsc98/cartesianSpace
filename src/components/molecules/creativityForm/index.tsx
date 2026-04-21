@@ -3,8 +3,6 @@ import css from './index.module.scss';
 import ColorPicker from '../../atoms/colorPicker';
 import SizeSetter from '../../atoms/sizeSetter';
 import Carousel from '../carousel';
-import { useModal } from '../../../hooks/useModal';
-import { safeGetItem, safeSetItem } from '../../../utils/storage';
 
 function CreativityForm(props) {
   const {
@@ -30,39 +28,8 @@ function CreativityForm(props) {
   );
   const [actualizeColor, setActualizeColor] = useState(false);
 
-  const {
-    showSecondaryContent,
-    setShowSecondary,
-    setIsTransitioning,
-    showSecondary,
-    isTransitioning,
-  } = useModal();
 
-  const shapes = [
-    {
-      id: 'circle',
-      type: 'shapes',
-      name: 'Círculo',
-      img: '/images/elements/circle.png',
-    },
-    {
-      id: 'line',
-      type: 'shapes',
-      name: 'Linha',
-      img: '/images/elements/line.png',
-    },
-    {
-      id: 'triangle',
-      type: 'shapes',
-      name: 'Triângulo',
-      img: '/images/elements/triangle.png',
-    },
-    {
-      id: 'square',
-      type: 'shapes',
-      name: 'Quadrado',
-      img: '/images/elements/square.png',
-    },
+  const elements3d = [
     {
       id: 'sphere',
       type: 'shapes',
@@ -92,6 +59,33 @@ function CreativityForm(props) {
       type: 'shapes',
       name: 'Seta',
       img: '/images/elements/arrow.png',
+    },
+  ];
+
+  const elements2d = [
+    {
+      id: 'circle',
+      type: 'shapes',
+      name: 'Círculo',
+      img: '/images/elements/circle.png',
+    },
+    {
+      id: 'line',
+      type: 'shapes',
+      name: 'Linha',
+      img: '/images/elements/line.png',
+    },
+    {
+      id: 'triangle',
+      type: 'shapes',
+      name: 'Triângulo',
+      img: '/images/elements/triangle.png',
+    },
+    {
+      id: 'square',
+      type: 'shapes',
+      name: 'Quadrado',
+      img: '/images/elements/square.png',
     },
   ];
 
@@ -147,76 +141,6 @@ function CreativityForm(props) {
 
   return (
     <form className={css['shape-form-container']} onSubmit={handleSubmit}>
-      <ul className={css['shapes-list']}>
-        <li
-          style={{ width: '100%' }}
-          onClick={() => setSelectedCarousel('traces')}
-        >
-          <Carousel
-            selected={activeCreativityRef.current.id}
-            isMobile={isMobile}
-            active={selectedCarousel === 'traces'}
-            handleSelection={handleTraceSelection}
-            items={traces}
-            colorRef={colorRef}
-            visibleColumns={isMobile ? 3 : 5}
-            onCustomButtonClick={() => {
-              setBoardIsActive(true);
-            }}
-          />
-        </li>
-
-        <li
-          style={{ width: '100%' }}
-          onClick={() => setSelectedCarousel('shapes')}
-        >
-          <Carousel
-            selected={activeCreativityRef.current.id}
-            isMobile={isMobile}
-            active={selectedCarousel === 'shapes'}
-            handleSelection={handleShapeSelection}
-            items={shapes}
-            colorRef={colorRef}
-            visibleColumns={isMobile ? 2 : 4}
-            onCustomButtonClick={() => {
-              setBoardIsActive(true);
-
-              const draggableBoardState = safeGetItem('draggable-board-state');
-
-              let state = {
-                items: shapes,
-                timestamp: Date.now(),
-              };
-
-              if (draggableBoardState) {
-                try {
-                  const { scale, positions, locked } =
-                    JSON.parse(draggableBoardState);
-
-                  state = {
-                    ...state,
-                    locked: locked,
-                    scale: scale,
-                    positions: positions,
-                  };
-                } catch {
-                  // dados corrompidos — continua sem o estado do board
-                }
-              }
-
-              safeSetItem('draggable-board-state', JSON.stringify(state));
-
-              setIsTransitioning(true);
-              setTimeout(() => {
-                setShowSecondary(true);
-                setIsTransitioning(false);
-              }, 300);
-
-            }}
-          />
-        </li>
-      </ul>
-
       <div className={css['shape-settings']} data-is-mobile={isMobile}>
         <ColorPicker
           colorRef={colorRef}
@@ -227,8 +151,70 @@ function CreativityForm(props) {
           setCurrentColor={setCurrentColor}
         />
 
-        <SizeSetter sizeRef={sizeRef} colorRef={colorRef} />
+        <SizeSetter sizeRef={sizeRef} shouldRotate={true} colorRef={colorRef} />
       </div>
+
+      <ul className={css['shapes-list']}>
+        <li
+          style={{ width: '100%' }}
+          onClick={() => setSelectedCarousel('traces')}
+        >
+          <div className={css['elements']}>
+
+            <h3>Traços</h3>
+            <Carousel
+              selected={activeCreativityRef.current.id}
+              isMobile={isMobile}
+              active={selectedCarousel === 'traces'}
+              handleSelection={handleTraceSelection}
+              items={traces}
+              colorRef={colorRef}
+              visibleColumns='3'
+
+            />
+          </div>
+        </li>
+
+        <li
+          style={{ width: '100%' }}
+          onClick={() => setSelectedCarousel('shapes')}
+        >
+          <div className={css['elements']}>
+            <h3> Elementos <br/> 2D</h3>
+            <Carousel
+              selected={activeCreativityRef.current.id}
+              isMobile={isMobile}
+              active={selectedCarousel === 'shapes'}
+              handleSelection={handleShapeSelection}
+              items={elements2d}
+              colorRef={colorRef}
+              visibleColumns='3'
+            />
+          </div>
+        </li>
+
+        <li
+          style={{ width: '100%' }}
+          onClick={() => setSelectedCarousel('shapes')}
+        >
+
+          <div className={css['elements']}>
+
+
+            <h3> Elementos <br/> 3D</h3>
+
+            <Carousel
+              selected={activeCreativityRef.current.id}
+              isMobile={isMobile}
+              active={selectedCarousel === 'shapes'}
+              handleSelection={handleShapeSelection}
+              items={elements3d}
+              colorRef={colorRef}
+              visibleColumns='3'
+            />
+          </div>
+        </li>
+      </ul>
 
     </form>
   );
