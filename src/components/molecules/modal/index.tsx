@@ -102,9 +102,18 @@ function Modal({ setIsOwnCursorActive, modalIsOpenRef, id, modalState, writingRe
 
       const savedPosition = loadSavedPosition();
       if (savedPosition) {
-        setPosition(savedPosition);
+        const viewportHeight = window.innerHeight;
+        const viewportWidth = window.innerWidth;
+        const maxTop = Math.max(0, viewportHeight - 50);
+        const maxLeft = Math.max(0, viewportWidth - 50);
+        
+        let safeTop = Math.max(0, Math.min(savedPosition.top, maxTop));
+        let safeLeft = Math.max(0, Math.min(savedPosition.left, maxLeft));
+
+        // Avoid off-screen rendering if left is negative or greater than screen
+        setPosition({ top: safeTop, left: safeLeft });
       } else {
-        setPosition({ top: 16, left: 16 });
+        setPosition(getCenterPosition());
       }
 
       hasInitialized.current = true;

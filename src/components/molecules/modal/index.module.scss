@@ -5,6 +5,13 @@
   position: fixed;
   min-width: 200px;
 
+  max-width: 100vw;
+
+  @media (max-width: 768px) {
+    max-width: calc(100vw - 2rem);
+    overflow: hidden;
+  }
+
   padding: 1.2rem 1rem;
   border-radius: 1rem;
   background-color: $sky-gray;
