@@ -2,7 +2,6 @@ import React, { useCallback, useRef } from 'react';
 import CreativityForm from '../../molecules/creativityForm';
 import Calculator from '../../molecules/calculator';
 import CommandHelpers from '../../molecules/commandHelpers';
-import DraggableBoard from '../../molecules/draggableBoard';
 import EditingForm from '../../molecules/editingForm';
 import AnimationForm from '../../molecules/animationForm';
 import FunctionForm from '../../molecules/functionForm';
@@ -495,23 +494,7 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
           activeCreativityRef={activeCreativityRef}
           currentColor={colorRef.current}
           setCurrentColor={() => { }}
-          boardIsActive={boardIsActive}
-          setBoardIsActive={setBoardIsActive}
           handleCreativity={() => handleCreativityRef.current()}
-        />
-      ),
-      secondaryContent: (
-        <DraggableBoard
-          onItemClick={(item: any) => {
-            setElementsIsActive(true);
-            drawingRef.current = true;
-            elementsRef.current.shape = item.id;
-            elementsRef.current.active = true;
-            activeCreativityRef.current.name = item.name;
-            activeCreativityRef.current.id = item.id;
-            activeCreativityRef.current.type = item.type;
-            activeCreativityRef.current.img = item.img;
-          }}
         />
       ),
       onClose: () => {

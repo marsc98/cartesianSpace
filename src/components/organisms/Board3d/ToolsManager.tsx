@@ -153,12 +153,12 @@ export function ToolsManager({
       {/* ── Controle de velocidade da câmera ──────────────────────────────── */}
       <div
         className={css['range-input-container']}
-        style={{ right: isMobile ? 0 : '-3.5rem', left: 'auto' }}
+        style={{ right: isMobile ? 0 : '5px', left: 'auto' }}
         title="Velocidade"
       >
         <RangeInput
           id="sizeSetter"
-          shouldRotate={true}
+          shouldRotate={false}
           isMobile={isMobile}
           min={10}
           max={100}
