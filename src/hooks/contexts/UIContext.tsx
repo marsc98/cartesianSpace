@@ -1,11 +1,5 @@
 import React, { createContext, useContext, useRef, useState, useMemo } from 'react';
 
-interface DraggableBoardState {
-  active: boolean;
-  items: Record<string, unknown>;
-  itemType: string | null;
-}
-
 interface UIContextValue {
   isOwnCursorActive: boolean;
   setIsOwnCursorActive: React.Dispatch<React.SetStateAction<boolean>>;
@@ -15,8 +9,6 @@ interface UIContextValue {
   setScenesIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   starsAreActive: boolean;
   setStarsAreActive: React.Dispatch<React.SetStateAction<boolean>>;
-  draggableBoard: DraggableBoardState;
-  setDraggableBoard: React.Dispatch<React.SetStateAction<DraggableBoardState>>;
   modalIsOpenRef: React.MutableRefObject<boolean>;
   openMenuRef: React.MutableRefObject<boolean>;
 }
@@ -28,9 +20,6 @@ export const UIProvider = ({ children }: { children: React.ReactNode }) => {
   const [uploadFileIsActive, setUploadFileIsActive] = useState(false);
   const [scenesIsOpen, setScenesIsOpen] = useState(false);
   const [starsAreActive, setStarsAreActive] = useState(true);
-  const [draggableBoard, setDraggableBoard] = useState<DraggableBoardState>({
-    active: false, items: {}, itemType: null,
-  });
 
   const modalIsOpenRef = useRef(false);
   const openMenuRef = useRef(false);
@@ -40,11 +29,10 @@ export const UIProvider = ({ children }: { children: React.ReactNode }) => {
     uploadFileIsActive, setUploadFileIsActive,
     scenesIsOpen, setScenesIsOpen,
     starsAreActive, setStarsAreActive,
-    draggableBoard, setDraggableBoard,
     modalIsOpenRef, openMenuRef,
   }), [
     isOwnCursorActive, uploadFileIsActive, scenesIsOpen,
-    starsAreActive, draggableBoard,
+    starsAreActive,
   ]);
 
   return (
