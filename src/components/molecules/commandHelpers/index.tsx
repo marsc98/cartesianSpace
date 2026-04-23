@@ -6,7 +6,13 @@ import { useModal } from '../../../hooks/useModal';
 import { TUTORIALS } from '../../organisms/TutorialGuide/data';
 import { useIsMobile } from '../../../hooks/useIsMobile';
 
-const CommandsReference = ({ onStartTutorial = () => {} }) => {
+const CommandsReference = ({
+  onStartTutorial = (_: string) => {},
+  onClose = () => {},
+}: {
+  onStartTutorial?: (type: string) => void;
+  onClose?: () => void;
+}) => {
   const [activeTab, setActiveTab] = useState('navigation');
   const [currentPage, setCurrentPage] = useState(0);
   const tableRef = useRef(null);
@@ -98,12 +104,12 @@ const CommandsReference = ({ onStartTutorial = () => {} }) => {
     },
     tutorials: {
       title: 'Tutoriais',
-      commands: [],
+      commands: Object.entries(TUTORIALS).map(([key, { label }]) => ({ key, description: label })),
     },
   };
 
   const itemsPerPage = isMobile ? 3 : 5;
-  const currentCommands = activeTab !== 'tutorials' ? commandsData[activeTab].commands : [];
+  const currentCommands = commandsData[activeTab].commands;
   const totalPages = Math.ceil(currentCommands.length / itemsPerPage);
   const startIndex = currentPage * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -167,55 +173,67 @@ const CommandsReference = ({ onStartTutorial = () => {} }) => {
         ))}
       </div>
 
-      {activeTab === 'tutorials' ? (
-        <div className={css['tutorials-list']}>
-          {Object.entries(TUTORIALS).map(([key, { label }], index) => (
-            <Button
-              key={key}
-              type="arcade"
-              text={label}
-              action={() => onStartTutorial(key)}
-              color={index % 2 === 0 ? 'red' : 'yellow'}
-            />
-          ))}
-        </div>
-      ) : (
-        <div
-          className={css['table-container']}
-          ref={tableRef}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-        >
-          <table className={css['commands-table']}>
-            <thead>
-              <tr>
-                <th>Comando</th>
-                <th>Descrição</th>
+      <div
+        className={css['table-container']}
+        ref={tableRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+      >
+        <table className={css['commands-table']}>
+          <thead>
+            <tr>
+              {activeTab === 'tutorials' ? (
+                <>
+                  <th style={{textAlign: 'center'}}>Tutoriais</th>
+                  <th></th>
+                </>
+              ) : (
+                <>
+                  <th>Comando</th>
+                  <th style={{textAlign: 'center'}}>Descrição</th>
+                </>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {visibleCommands.map((command, index) => (
+              <tr key={index}>
+                {activeTab === 'tutorials' ? (
+                  <>
+                    <td className={css['command-description']}>
+                      <span className={css['description-text']}>{command.description}</span>
+                    </td>
+                    <td className={css['tutorial-action']}>
+                      <Button
+                        color="blue"
+                        text="▶  Iniciar"
+                        action={() => { onStartTutorial(command.key); onClose(); }}
+                      />
+                    </td>
+                  </>
+                ) : (
+                  <>
+                    <td className={css['command-key']}>
+                      <kbd>{command.key}</kbd>
+                    </td>
+                    <td className={css['command-description']}>
+                      <span className={css['description-text']}>
+                        {command.description}
+                      </span>
+                    </td>
+                  </>
+                )}
               </tr>
-            </thead>
-            <tbody>
-              {visibleCommands.map((command, index) => (
-                <tr key={index}>
-                  <td className={css['command-key']}>
-                    <kbd>{command.key}</kbd>
-                  </td>
-                  <td className={css['command-description']}>
-                    <span className={css['description-text']}>
-                      {command.description}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      {activeTab !== 'tutorials' && totalPages > 1 && (
+      {totalPages > 1 && (
         <div className={css['pagination-container']}>
           <Button
             className={css['pagination-button']}

@@ -1,15 +1,6 @@
 // CommandsReference.module.scss
 @use "../../../utils/styles/vars" as *;
 
-.tutorials-list {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-  padding: 1rem 0;
-  justify-items: center;
-}
-
-
 .commands-reference-container {
   width: 100%;
   max-width: 800px;
@@ -122,6 +113,11 @@
         }
       }
 
+      .tutorial-action {
+        padding: 8px 16px;
+        text-align: right;
+      }
+
       tbody {
         tr {
           border-bottom: 1px solid #3a3a3a;
@@ -212,6 +208,7 @@
 
   @media (max-width: 768px) {
     padding: 16px;
+    width: 100vw;
 
     .header h2 {
       font-size: 20px;

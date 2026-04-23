@@ -123,7 +123,7 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
       isOpen: true,
       formId: 'info-form',
       title: 'Informações',
-      content: <CommandHelpers onStartTutorial={(type) => setActiveTutorial(type)} />,
+      content: <CommandHelpers onStartTutorial={(type) => setActiveTutorial(type)} onClose={() => removeModal(id)} />,
       buttonText: 'Informações do projeto',
       iconName: 'infoOnInfo',
       // Usa a ref para evitar ordem de declaração / deps circulares
