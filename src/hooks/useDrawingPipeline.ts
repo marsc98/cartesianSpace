@@ -1,6 +1,7 @@
 import { useRef, useCallback } from 'react';
 import { createTraceDescriptor } from '../lib/drawing/traceDescriptor';
 import { runTracePipeline } from '../lib/drawing/tracePipeline';
+import { loadTraceWasm } from '../lib/wasm/index.js';
 import type { TraceDescriptor, TraceSource } from '../types';
 
 export function useDrawingPipeline(deps: any) {
@@ -16,20 +17,26 @@ export function useDrawingPipeline(deps: any) {
     rawCountRef.current++;
   }, []);
 
-  const commitTrace = useCallback(() => {
+  const commitTrace = useCallback(async () => {
     const n = rawCountRef.current;
     if (n < 2) return null;
     const { colorRef, sizeRef } = deps;
+
+    // Snapshot raw data before any async gap — prevents corruption if a new stroke
+    // starts while the WASM module is still being fetched (first draw on mobile).
+    const rawSnapshot = rawCoordsRef.current.slice(0, n * 3);
+    rawCountRef.current = 0;
+
+    await loadTraceWasm().catch(() => {});
+
     const descriptor: TraceDescriptor = createTraceDescriptor({
       color: colorRef.current,
       size: sizeRef.current,
-      rawCoords: rawCoordsRef.current,
+      rawCoords: rawSnapshot,
       rawCount: n,
       source: 'local' as TraceSource,
     });
-    const result = runTracePipeline(descriptor, deps);
-    rawCountRef.current = 0;
-    return result;
+    return runTracePipeline(descriptor, deps);
   }, []); // lê deps por referência — objeto estável vindo de drawingPipelineDepsRef.current
 
   const commit3dTrace = useCallback(() => {

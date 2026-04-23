@@ -30,6 +30,40 @@ export const useDrawEvents = ({
   const movementVec = useRef(new THREE.Vector3());
   const movementPathRef = useRef<THREE.Vector3[]>([movementVec.current]);
 
+  // Called on every raw mousemove/touchmove — no throttle, just accumulates the 3D point.
+  // Preview rendering stays throttled in handleDrawMouseMove.
+  const accumulateFromClient = useCallback((clientX: number, clientY: number) => {
+    if (!drawingRef.current || !controlsRef.current?.mouseDown || elementsRef.current.active) return;
+    const activeId = activeCreativityRef.current.id;
+    if (activeId !== 'optimizedTrace' && activeId !== '3dTrace') return;
+
+    const canvas = rendererRef.current?.domElement;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const ndcX = ((clientX - rect.left) / (canvas.clientWidth || rect.width)) * 2 - 1;
+    const ndcY = -((clientY - rect.top) / (canvas.clientHeight || rect.height)) * 2 + 1;
+
+    raycasterRef.current.setFromCamera({ x: ndcX, y: ndcY }, cameraRef.current);
+    const distance = drawDistanceRef.current;
+    workVec.current
+      .copy(raycasterRef.current.ray.direction)
+      .multiplyScalar(distance)
+      .add(cameraRef.current.position);
+
+    let z: number;
+    if (controlsRef.current.controlPressed) {
+      const zOffset = -ndcY * distance;
+      z = workVec.current.z + zOffset;
+      activeCreativityRef.current.lastZ = z;
+    } else {
+      z = activeCreativityRef.current.lastZ !== undefined
+        ? activeCreativityRef.current.lastZ
+        : workVec.current.z;
+    }
+
+    accumulatePoint(workVec.current.x, workVec.current.y, z);
+  }, [drawingRef, controlsRef, elementsRef, activeCreativityRef, rendererRef, raycasterRef, cameraRef, drawDistanceRef, accumulatePoint]);
+
   const handleDrawMouseMove = useCallback(() => {
     if (!drawingRef.current) return;
     if (!controlsRef.current?.mouseDown) return;
@@ -56,10 +90,6 @@ export const useDrawEvents = ({
     }
 
     const activeId = activeCreativityRef.current.id;
-    if (activeId === 'optimizedTrace' || activeId === '3dTrace') {
-      accumulatePoint(movementVec.current.x, movementVec.current.y, movementVec.current.z);
-    }
-
     const previewElement = activeId === 'optimizedTrace' ? '3dTrace' : activeId;
 
     const elementData = {
@@ -101,7 +131,6 @@ export const useDrawEvents = ({
     colorRef,
     sceneRef,
     currentTraceSegmentsRef,
-    accumulatePoint,
     createTraceAlongPath,
     addElement,
   ]);
@@ -187,5 +216,5 @@ export const useDrawEvents = ({
     ]
   );
 
-  return { handleDrawMouseMove, handleDrawMouseDown, handleDrawMouseUp };
+  return { handleDrawMouseMove, handleDrawMouseDown, handleDrawMouseUp, accumulateFromClient };
 };
