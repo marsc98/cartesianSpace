@@ -1,10 +1,17 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
+import * as THREE from 'three';
 
 // ── Componentes extraídos ──────────────────────────────────────────────────
 import { SceneRenderer } from './SceneRenderer';
 import { InputHandler, useCursorHandlers } from './InputHandler';
 import { UILayer } from './UILayer';
 import { ToolsManager } from './ToolsManager';
+
+// ── Mobile interaction hooks ──────────────────────────────────────────────
+import { useScreenOrientation } from '../../../hooks/useScreenOrientation';
+import { useTouchOffset } from '../../../hooks/useTouchOffset';
+import { useCameraComposer } from './useCameraComposer';
+import { CalibrationButton } from '../../atoms/CalibrationButton';
 
 // ── Contextos ─────────────────────────────────────────────────────────────
 import { useDrawing } from '../../../hooks/contexts/DrawingContext';
@@ -94,7 +101,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
   const { coordinates, setCoordinates } = useCoordinates();
   const coordinatesRef = useRef(coordinates);
   coordinatesRef.current = coordinates;
-  const { mountRef } = useScene();
+  const { mountRef, needsRenderRef } = useScene();
   const { historySize } = useHistory();
   const { cameraRef, controlsRef, rotationRef, keysHeldRef } = useCamera();
   const { updateSketch } = useSketch();
@@ -118,6 +125,13 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
   const animationFrameRef = useRef<number | null>(null);
   const navigatorRenderFnRef = useRef<(() => void) | null>(null);
   const accelerometerRenderFnRef = useRef<(() => void) | null>(null);
+
+  // ── Refs de acelerômetro ──────────────────────────────────────────────────
+  const accelQRef = useRef(new THREE.Quaternion());
+  const accelActiveRef = useRef(false);
+  const lastBetaRef = useRef(0);
+  const lastAlphaRef = useRef(0);
+  const lastGammaRef = useRef(0);
 
   // deleteElement vem do useUniverseEventListeners, mas useModalHandlers precisa dele.
   // Ref intermediária resolve a dependência circular sem quebrar regras de hooks.
@@ -161,6 +175,35 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
 
   // ── Editing mode manager ──────────────────────────────────────────────────
   const editingModeManager = useEditingModeManager(EDITING_MODES);
+
+  // ── Mobile interaction ────────────────────────────────────────────────────
+  const { remapAxes, showCalibrationButton, calibrate } = useScreenOrientation();
+  const { touchOffsetQRef, addPanDelta, resetOffset } = useTouchOffset();
+
+  // Manter accelActiveRef sincronizado com o estado React
+  useEffect(() => {
+    accelActiveRef.current = viewWithAccelerometer;
+    if (!viewWithAccelerometer) resetOffset();
+  }, [viewWithAccelerometer, resetOffset]);
+
+  useCameraComposer({
+    cameraRef,
+    accelQRef,
+    touchOffsetQRef,
+    accelActiveRef,
+    needsRenderRef,
+    accelerometerRenderFnRef,
+  });
+
+  const handleCalibrate = useCallback(() => {
+    calibrate(lastBetaRef.current, lastAlphaRef.current, lastGammaRef.current);
+  }, [calibrate]);
+
+  const handleRawOrientation = useCallback((beta: number, alpha: number, gamma: number) => {
+    lastBetaRef.current = beta;
+    lastAlphaRef.current = alpha;
+    lastGammaRef.current = gamma;
+  }, []);
 
   // ── Handlers que ficam no orquestrador ────────────────────────────────────
   // Todos os handlers são useCallback com deps estáveis (refs + useState setters)
@@ -288,6 +331,10 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
     setIsDrawing,
     setIsWriting,
     setEditingInteractorIsActive,
+  }, {
+    accelActiveRef,
+    accelQRef,
+    addPanDelta,
   });
 
   // Sincroniza deleteElementRef após cada render (sem useEffect — refs não são efeito colateral)
@@ -375,7 +422,15 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
       {/* Device orientation / acelerômetro */}
       <InputHandler
         viewWithAccelerometer={viewWithAccelerometer}
+        accelQRef={accelQRef}
+        remapAxes={remapAxes}
+        onRawOrientation={handleRawOrientation}
       />
+
+      {/* Botão de calibração — aparece em browsers sem screen.orientation */}
+      {showCalibrationButton && viewWithAccelerometer && (
+        <CalibrationButton onCalibrate={handleCalibrate} className={css['calibration-button']} />
+      )}
 
       {/* Canvas mount point do WebGL renderer */}
       <div

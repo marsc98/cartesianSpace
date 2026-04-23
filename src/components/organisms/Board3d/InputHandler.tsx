@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
-import type { MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
+import type { RefObject, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
 import * as THREE from 'three';
 import { useCamera } from '../../../hooks/contexts/CameraContext';
-import { useScene } from '../../../hooks/contexts/SceneContext';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -15,6 +14,16 @@ interface AccelerometerState {
 interface InputHandlerProps {
   /** Liga/desliga o modo acelerômetro */
   viewWithAccelerometer: boolean;
+  /** Ref onde o quaternion processado é gravado (em vez de camera.quaternion diretamente) */
+  accelQRef: RefObject<THREE.Quaternion>;
+  /** Remapeia eixos conforme orientação da tela */
+  remapAxes: (beta: number, alpha: number, gamma: number) => {
+    beta: number;
+    alpha: number;
+    gamma: number;
+  };
+  /** Callback com valores raw do sensor (antes de smoothing) — usado para calibração */
+  onRawOrientation?: (beta: number, alpha: number, gamma: number) => void;
   /** Callback opcional para debug do acelerômetro */
   onAccelerometerChange?: (state: AccelerometerState) => void;
 }
@@ -33,16 +42,24 @@ interface InputHandlerProps {
  */
 export function InputHandler({
   viewWithAccelerometer,
+  accelQRef,
+  remapAxes,
+  onRawOrientation,
   onAccelerometerChange,
 }: InputHandlerProps) {
   const { cameraRef } = useCamera();
-  const { needsRenderRef } = useScene();
   const filteredOrientation = useRef({ alpha: 0, beta: 0, gamma: 0 });
 
   // Pre-allocated Three.js objects to avoid per-event allocations at ~60 Hz
   const _euler = useRef(new THREE.Euler(0, 0, 0, 'YXZ'));
   const _q = useRef(new THREE.Quaternion());
   const _qCorrection = useRef(new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)));
+
+  // Keep callbacks in refs so the effect closure is always fresh
+  const remapAxesRef = useRef(remapAxes);
+  remapAxesRef.current = remapAxes;
+  const onRawOrientationRef = useRef(onRawOrientation);
+  onRawOrientationRef.current = onRawOrientation;
 
   // ── Accelerometer ──────────────────────────────────────────────────────────
 
@@ -52,10 +69,19 @@ export function InputHandler({
     function handleOrientation(event: DeviceOrientationEvent) {
       if (event.alpha === null || event.beta === null || event.gamma === null) return;
 
+      onRawOrientationRef.current?.(event.beta, event.alpha, event.gamma);
+
       const smoothing = 0.8;
 
-      // Correção de wrap-around do alpha antes do smoothing
-      let rawAlpha = event.alpha;
+      // Apply remapping before smoothing pipeline
+      const { beta: bR, alpha: aR, gamma: gR } = remapAxesRef.current(
+        event.beta,
+        event.alpha,
+        event.gamma,
+      );
+
+      // Wrap-around correction on remapped alpha before smoothing
+      let rawAlpha = aR;
       const prevAlpha = filteredOrientation.current.alpha;
       const alphaDiff = rawAlpha - prevAlpha;
       if (alphaDiff > 180) rawAlpha -= 360;
@@ -64,15 +90,14 @@ export function InputHandler({
       filteredOrientation.current.alpha =
         smoothing * prevAlpha + (1 - smoothing) * rawAlpha;
       filteredOrientation.current.beta =
-        smoothing * filteredOrientation.current.beta + (1 - smoothing) * event.beta;
+        smoothing * filteredOrientation.current.beta + (1 - smoothing) * bR;
       filteredOrientation.current.gamma =
-        smoothing * filteredOrientation.current.gamma + (1 - smoothing) * event.gamma;
+        smoothing * filteredOrientation.current.gamma + (1 - smoothing) * gR;
 
       const { alpha, beta, gamma } = filteredOrientation.current;
       const degToRad = Math.PI / 180;
 
       // Conversão para quaternion (abordagem Three.js DeviceOrientationControls)
-      // Objetos pré-alocados via useRef — sem alocação a cada evento (~60 Hz)
       _euler.current.set(beta * degToRad, alpha * degToRad, -gamma * degToRad);
       _q.current.setFromEuler(_euler.current);
 
@@ -83,10 +108,9 @@ export function InputHandler({
       if (cameraRef.current && cameraRef.current.quaternion.dot(_q.current) < 0) {
         _q.current.set(-_q.current.x, -_q.current.y, -_q.current.z, -_q.current.w);
       }
-      if (cameraRef.current) {
-        cameraRef.current.quaternion.copy(_q.current);
-        needsRenderRef.current = true;
-      }
+
+      // Grava em accelQRef — useCameraComposer aplica à câmera
+      accelQRef.current.copy(_q.current);
 
       onAccelerometerChange?.({
         x: beta.toFixed(2),
@@ -118,17 +142,13 @@ export function InputHandler({
     return () => {
       window.removeEventListener('deviceorientation', handleOrientation);
     };
-  }, [viewWithAccelerometer, cameraRef, onAccelerometerChange]);
+  }, [viewWithAccelerometer, cameraRef, accelQRef, onAccelerometerChange]);
 
   return null;
 }
 
 // ─── Hooks auxiliares expostos para uso no index.tsx ────────────────────────
 
-/**
- * Hook que encapsula os handlers de cursor para serem passados ao <main>
- * via props onMouseMove/onTouchMove.
- */
 export function useCursorHandlers(
   onCursorMove: (x: number, y: number) => void,
   modalsList: unknown[],
