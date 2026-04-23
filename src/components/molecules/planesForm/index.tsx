@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import css from './index.module.scss';
-import Carousel from '../carousel';
+import Item from '../../atoms/item';
 import { useElements } from '../../../hooks/contexts/ElementsContext';
 import { useDrawingRefs } from '../../../hooks/contexts/DrawingContext';
 
@@ -29,7 +29,7 @@ function PlanesForm({ isMobile, selectedTerrainRef }: PlanesFormProps) {
     { id: 'concreto', name: 'Concreto', color: '#5D4037' },
   ];
 
-  const handleTerrainSelect = (terrain: any) => {
+  const handleTerrainSelect = (terrain: TerrainType) => {
     setSelectedTerrain(terrain.id);
     selectedTerrainRef.current = terrain.id;
 
@@ -40,18 +40,20 @@ function PlanesForm({ isMobile, selectedTerrainRef }: PlanesFormProps) {
 
   return (
     <div className={css['terrain-selection-container']}>
-      <Carousel
-        items={TERRAIN_TYPES}
-        isPlane={true}
-        selected={selectedTerrain}
-        isMobile={isMobile}
-        active={true}
-        handleSelection={handleTerrainSelect}
-        colorRef={colorRef}
-        variant="matrix"                                                       
-        columns={isMobile ? 2 : 4}                                                            
-        rows={isMobile ? 4 :2}
-      />
+      <div className={css['terrain-grid']} data-is-mobile={isMobile}>
+        {TERRAIN_TYPES.map((terrain) => (
+          <Item
+            key={terrain.id}
+            id={terrain.id}
+            item={terrain}
+            isSelected={selectedTerrain === terrain.id}
+            colorRef={colorRef}
+            isPlane={true}
+            isMobile={isMobile}
+            onClick={() => handleTerrainSelect(terrain)}
+          />
+        ))}
+      </div>
     </div>
   );
 }

@@ -59,7 +59,7 @@ function Item({
   const cardHeight = customHeight ?? (isMobile && hasNoText
     ? '85px'
     : isMobile
-      ? '110px'
+      ? '90px'
       : cardSize === 'm'
         ? '140px'
         : hasNoText

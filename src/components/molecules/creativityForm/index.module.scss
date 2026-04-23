@@ -1,81 +1,81 @@
 .shape-form-container {
   width: 100%;
+  max-width: 450px;
   height: 100%;
 
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-
-  grid-template-columns: repeat(1, 1fr);
-
   gap: 1rem;
-
-  /* padding: 1rem; */
-
-  .shapes-list {
-    height: 100%;
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    justify-content: center;
-    gap: 1rem;
-    align-items: flex-start;
-
-    .elements {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-
-      gap: .8rem;
-      align-items: center;
-      justify-content: flex-start;
-
-      h3 {
-        text-align: center;
-        color: #cfcfcf;
-      }
-    }
-
-  }
-}
-
-.shape-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin: 1rem 0;
-}
-
-.shape-option {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0.5rem;
-  border: 2px solid #999;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
+  overflow-y: auto;
 }
 
 .shape-settings {
   width: 100%;
-
   display: flex;
   flex-direction: column;
   gap: 1rem;
-
-  justify-content: space-between;
-
-
 }
 
-.shape-option.selected {
-  border-color: #ddd;
-}
-
-.apply-button {
-  margin-top: 1rem;
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
   width: 100%;
+}
+
+.section {
+  width: 100%;
+  border: 1px solid #374151;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.3),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.section-label {
+  display: block;
+  padding: 5px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #828998;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  user-select: none;
+}
+
+.section-items {
+  padding: 10px;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  cursor: grab;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.scroll-item {
+  flex: 0 0 calc((100% - 3 * 8px) / 4);
+  scroll-snap-align: start;
+
+  > div {
+    width: 100% !important;
+
+    @media (min-width: 748px) {
+      width: 100px !important;
+    }
+  }
 }

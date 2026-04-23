@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect } from 'react';
 import css from './index.module.scss';
-import Carousel from '../carousel';
+import Item from '../../atoms/item';
+import { colorToFilter } from '../../../utils/functions';
 import {
   drawElementSelectionIndicator,
 } from '../../organisms/Board3d/spaceElements';
@@ -73,21 +74,22 @@ function EditingForm(props) {
 
   return (
     <div className={css['editing-container']}>
-      {/* selected={activeCreativityRef.current.id} */}
-      <Carousel
-        selected={true}
-        isMobile={isMobile}
-        active={true}
-        handleSelection={(shape) => shape.action()}
-        label={''}
-        items={options}
-        colorRef={colorRef}
-        cardSize="m"
-        cardIsSvg={true}
-        variant="matrix"                                                       
-        columns={isMobile ? 2 : 4}                                                            
-        rows={isMobile ? 4 :2}
-      />
+      <div className={css['options-grid']} data-is-mobile={isMobile}>
+        {options.map((option) => (
+          <Item
+            key={option.id}
+            id={option.id}
+            item={option}
+            isSelected={false}
+            colorFilter={colorToFilter(colorRef.current)}
+            colorRef={colorRef}
+            cardSize="m"
+            cardIsSvg={true}
+            isMobile={isMobile}
+            onClick={option.action}
+          />
+        ))}
+      </div>
     </div>
   );
 }

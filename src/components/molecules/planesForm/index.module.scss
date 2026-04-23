@@ -1,3 +1,20 @@
+.terrain-selection-container {
+  width: 100%;
+  height: 100%;
+}
+
+.terrain-grid {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: 20px;
+  align-items: center;
+  justify-items: center;
+
+  &[data-is-mobile='true'] {
+    grid-template-columns: repeat(2, auto);
+  }
+}
+
 .terrain-list {
   display: flex;
   gap: 1rem;
