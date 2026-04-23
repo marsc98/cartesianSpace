@@ -97,7 +97,8 @@ $shadow-color: rgba(0, 0, 0, 0.3);
 @media (max-width: 640px) {
   .color-picker {
     &__common-colors {
-      grid-template-columns: repeat(6, 1fr);
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(2, 1fr);
     }
 
     &__color-circle {

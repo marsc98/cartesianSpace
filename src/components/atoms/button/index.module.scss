@@ -126,6 +126,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
+  @media (max-width: 640px)  {
+    width: 160px;
+    height: 160px;
+  }
 }
 
 .bezel {
@@ -142,6 +147,11 @@
     inset 0 2px 4px rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(0, 0, 0, 0.5);
   z-index: 1;
+
+  @media (max-width: 640px)  {
+    width: 130px;
+    height: 130px;
+  }
 }
 
 .socket {
@@ -155,6 +165,12 @@
   align-items: center;
   justify-content: center;
   z-index: 2;
+
+
+  @media (max-width: 640px)  {
+    width: 95px;
+    height: 95px;
+  }
 }
 
 .button-plunger {
@@ -170,7 +186,7 @@
   justify-content: center;
   text-transform: uppercase;
   font-weight: 900;
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   border: none;
   z-index: 10;
   top: -12px;
@@ -201,6 +217,12 @@
   &:disabled {
     opacity: 0.45;
     cursor: not-allowed;
+  }
+
+
+  @media (max-width: 640px)  {
+    width: 80px;
+    height: 80px;
   }
 }
 

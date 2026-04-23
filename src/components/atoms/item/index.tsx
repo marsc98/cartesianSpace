@@ -20,6 +20,8 @@ interface ItemProps {
   hasNoText?: boolean;
   canHover?: boolean;
   isMobile?: boolean;
+  customWidth?: string;
+  customHeight?: string;
 }
 
 function Item({
@@ -36,6 +38,8 @@ function Item({
   hasNoText,
   canHover = true,
   isMobile,
+  customWidth,
+  customHeight,
 }: ItemProps) {
   const imgPath = item.src
     ? item.src
@@ -45,23 +49,22 @@ function Item({
         ? `/images/planes/${id}.png`
         : `/images/elements/${id}.png`;
 
-  const cardWidth = isMobile
-    ? '75px'
+  const cardWidth = customWidth ?? (isMobile
+    ? '85px'
     : cardSize === 'm'
       ? '120px'
       : hasNoText
         ? 'auto'
-        : '100px';
-  const cardHeight =
-    isMobile && hasNoText
-      ? '75px'
-      : isMobile
-        ? '95px'
-        : cardSize === 'm'
-          ? '140px'
-          : hasNoText
-            ? 'auto'
-            : '120px';
+        : '100px');
+  const cardHeight = customHeight ?? (isMobile && hasNoText
+    ? '85px'
+    : isMobile
+      ? '110px'
+      : cardSize === 'm'
+        ? '140px'
+        : hasNoText
+          ? 'auto'
+          : '120px');
   const borderColor = isSelected ? colorRef?.current || '#7c9dc9aa' : '#374151';
   const borderWidth = isSelected ? '3px' : '1px';
 
@@ -94,7 +97,7 @@ function Item({
         style={{
           width: '90%',
           maxWidth: hasNoText ? '50px' : '100px',
-          filter: colorFilter,
+          filter: !isPlane && colorFilter,
         }}
         src={imgPath}
         alt={item.name}

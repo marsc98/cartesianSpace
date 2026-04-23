@@ -199,10 +199,7 @@ function CreativityForm(props) {
         >
 
           <div className={css['elements']}>
-
-
             <h3> Elementos <br/> 3D</h3>
-
             <Carousel
               selected={activeCreativityRef.current.id}
               isMobile={isMobile}

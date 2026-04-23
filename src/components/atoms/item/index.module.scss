@@ -24,4 +24,8 @@
   font-weight: 500;
   color: #e5e7eb;
   pointer-events: none;
+
+  @media (max-width: 768px) {
+    font-size: 0.73rem;
+  }
 }
