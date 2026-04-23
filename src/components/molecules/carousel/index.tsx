@@ -63,6 +63,9 @@ interface CarouselProps {
   colorRef: React.MutableRefObject<string>;
   label?: string;
   visibleColumns?: number;
+  variant?: 'carousel' | 'matrix';
+  columns?: number;
+  rows?: number;
 }
 
 function Carousel({
@@ -77,10 +80,17 @@ function Carousel({
   colorRef,
   label,
   visibleColumns = 3,
+  variant = 'carousel',
+  columns = 3,
+  rows,
 }: CarouselProps) {
   const [selectedId, setSelectedId] = useState(selected ?? null);
   const [targetIndex, setTargetIndex] = useState(0);
   const [interpolatedIndex, setInterpolatedIndex] = useState(0);
+
+  useEffect(() => {
+    setSelectedId(selected ?? null);
+  }, [selected]);
 
   const isDragging = useRef(false);
   const dragStartX = useRef(0);
@@ -92,8 +102,8 @@ function Carousel({
 
   const shouldRenderAsList = items.length <= 3;
   const totalColumns = items.length;
-  const itemWidth = cardSize === 'm' ? 123.6 : 103;
-  const itemHeight = cardSize === 'm' ? 144.2 : 123.6;
+  const itemWidth = cardSize === 'm' ? 120 : isMobile ? 85 : 100;
+  const itemHeight = cardSize === 'm' ? 140 : isMobile ? 110 : 120;
   const gapVertical = isMobile ? 15 : 20;
 
   // Interpolação suave
@@ -264,9 +274,51 @@ function Carousel({
 
   const titleParts = breakableH3({ label: label });
 
+  if (variant === 'matrix') {
+    const effectiveRows = rows ?? Math.ceil(items.length / columns);
+    const visibleItems = items.slice(0, effectiveRows * columns);
+
+    return (
+      <div className={css['carousel-wrapper']}>
+        {titleParts.map((part, index) => {
+          if (typeof part === 'string' && part.trim() === '') return null;
+          return (
+            <h3 key={index} className={css['carousel-title']}>
+              {part}
+            </h3>
+          );
+        })}
+        <div
+          className={css['matrix-container']}
+          style={{ '--matrix-columns': columns } as React.CSSProperties}
+        >
+          {visibleItems.map((item) => (
+            <div key={item.id}>
+              <Item
+                id={item.id}
+                item={item}
+                isSelected={selectedId === item.id && active}
+                colorFilter={colorToFilter(colorRef.current)}
+                colorRef={colorRef}
+                cardSize={cardSize}
+                cardIsSvg={cardIsSvg}
+                isPlane={isPlane}
+                isMobile={isMobile}
+                onClick={() => handleSelect(item)}
+                isListMode={true}
+                customWidth={isMobile ? '100px' : undefined}
+                customHeight={isMobile ? '120px' : undefined}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const containerHeight = shouldRenderAsList
     ? `${items.length * (itemHeight + gapVertical)}px`
-    : itemHeight * visibleColumns + gapVertical * (visibleColumns - 1);
+    : visibleColumns * (itemHeight + gapVertical);
 
   const containerWidth = isMobile ? '100%' : `${itemWidth + 40}px`;
 

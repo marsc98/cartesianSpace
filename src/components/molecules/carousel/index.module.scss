@@ -75,6 +75,7 @@ $shadow-color: rgba(0, 0, 0, 0.3);
 
   &.list-mode {
     cursor: default;
+    overflow: visible;
   }
 }
 
@@ -118,6 +119,14 @@ $shadow-color: rgba(0, 0, 0, 0.3);
   position: absolute;
   left: 50%;
   top: 50%;
+}
+
+.matrix-container {
+  display: grid;
+  grid-template-columns: repeat(var(--matrix-columns), auto);
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
 }
 
 .custom-button-wrapper {

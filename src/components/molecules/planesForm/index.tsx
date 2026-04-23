@@ -48,7 +48,9 @@ function PlanesForm({ isMobile, selectedTerrainRef }: PlanesFormProps) {
         active={true}
         handleSelection={handleTerrainSelect}
         colorRef={colorRef}
-        visibleColumns={4}
+        variant="matrix"                                                       
+        columns={isMobile ? 2 : 4}                                                            
+        rows={isMobile ? 4 :2}
       />
     </div>
   );
