@@ -1,5 +1,7 @@
 import { useEffect, useCallback, useRef } from 'react';
+import type { RefObject } from 'react';
 import * as THREE from 'three';
+import { calcPinchDelta } from '../utils/pinchGesture';
 import { useDrawing } from './contexts/DrawingContext';
 import { useElements } from './contexts/ElementsContext';
 import { useUI } from './contexts/UIContext';
@@ -29,7 +31,13 @@ import type { TraceDescriptor, AnyElement } from '../types';
 const _groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const _groundTarget = new THREE.Vector3();
 
-export const useUniverseEventListeners = (ctx: UniverseContext) => {
+interface AccelContext {
+  accelActiveRef: RefObject<boolean>;
+  accelQRef: RefObject<THREE.Quaternion>;
+  addPanDelta: (dx: number, dy: number, accelQ: THREE.Quaternion) => void;
+}
+
+export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: AccelContext) => {
   const {
     handleCloseModal,
     addTextToScene,
@@ -182,6 +190,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
     handleDrawMouseMove: handleBoardMovement,
     handleDrawMouseDown,
     handleDrawMouseUp,
+    accumulateFromClient,
   } = useDrawEvents({
     drawingRef,
     controlsRef,
@@ -588,7 +597,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
               currentTraceSegmentsRef.current.push(result.element);
             }
           } else {
-            commitTrace();
+            await commitTrace();
           }
         }
 
@@ -631,6 +640,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
         raycasterRef.current.ray.intersectPlane(_planeRef.current, _intersectionPointRef.current);
         handleBoardClick(_intersectionPointRef.current, e.clientX, e.clientY);
 
+        needsRenderRef.current = true;
         e.preventDefault();
         controlsRef.current.mouseDown = false;
 
@@ -790,77 +800,82 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
 
-        const currMidX = (touch1.clientX + touch2.clientX) / 2;
-        const currMidY = (touch1.clientY + touch2.clientY) / 2;
+        const curr1 = { x: touch1.clientX, y: touch1.clientY };
+        const curr2 = { x: touch2.clientX, y: touch2.clientY };
+        const currMidX = (curr1.x + curr2.x) / 2;
+        const currMidY = (curr1.y + curr2.y) / 2;
 
         controlsRef.current.isTwoFingerMove = true;
 
-        const currentDistance = Math.hypot(
-          touch1.clientX - touch2.clientX,
-          touch1.clientY - touch2.clientY,
-        );
-
         if (
-          controls.lastMidX === undefined ||
-          controls.lastMidY === undefined ||
-          controls.lastDistance === undefined
+          controls.lastTouch1 === undefined ||
+          controls.lastTouch2 === undefined
         ) {
+          controls.lastTouch1 = curr1;
+          controls.lastTouch2 = curr2;
           controls.lastMidX = currMidX;
           controls.lastMidY = currMidY;
-          controls.lastDistance = currentDistance;
-          controls.touchStartDistance = currentDistance;
+          controls.lastDistance = Math.hypot(curr2.x - curr1.x, curr2.y - curr1.y);
+          controls.touchStartDistance = controls.lastDistance;
           return;
         }
 
-        const midPointMoveX = currMidX - controls.lastMidX;
-        const midPointMoveY = currMidY - controls.lastMidY;
-        const midPointMovement = Math.hypot(midPointMoveX, midPointMoveY);
-
-        const distanceChange = currentDistance - controls.lastDistance;
-        const absoluteDistanceChange = Math.abs(distanceChange);
+        const { zoom, panX, panY } = calcPinchDelta(curr1, curr2, controls.lastTouch1, controls.lastTouch2);
 
         const panThreshold = 3;
         const zoomThreshold = 5;
         const panSensitivity = 0.01;
-        const zoomSensitivity = 0.002;
 
-        if (
-          midPointMovement > panThreshold &&
-          absoluteDistanceChange < zoomThreshold
-        ) {
-          const smoothedMoveX = midPointMoveX * panSensitivity;
-          const smoothedMoveY = midPointMoveY * panSensitivity;
-
-          if (Math.abs(smoothedMoveX) > 0.001) {
-            if (smoothedMoveX > 0) {
-              moveCamera('left', Math.abs(smoothedMoveX));
+        if (accelCtx?.accelActiveRef.current) {
+          if (Math.abs(zoom) > 0.001) {
+            if (zoom > 0) {
+              moveCamera('forward', zoom);
             } else {
-              moveCamera('right', Math.abs(smoothedMoveX));
+              moveCamera('backward', Math.abs(zoom));
+            }
+          }
+          if (Math.abs(panX) > panThreshold || Math.abs(panY) > panThreshold) {
+            accelCtx.addPanDelta(panX, panY, accelCtx.accelQRef.current!);
+          }
+        } else {
+          const midPointMovement = Math.hypot(panX, panY);
+          const absoluteZoom = Math.abs(zoom);
+
+          if (midPointMovement > panThreshold && absoluteZoom < zoomThreshold * 0.002) {
+            const smoothedMoveX = panX * panSensitivity;
+            const smoothedMoveY = panY * panSensitivity;
+
+            if (Math.abs(smoothedMoveX) > 0.001) {
+              if (smoothedMoveX > 0) {
+                moveCamera('left', Math.abs(smoothedMoveX));
+              } else {
+                moveCamera('right', Math.abs(smoothedMoveX));
+              }
+            }
+
+            if (Math.abs(smoothedMoveY) > 0.001) {
+              if (smoothedMoveY > 0) {
+                moveCamera('up', Math.abs(smoothedMoveY));
+              } else {
+                moveCamera('down', Math.abs(smoothedMoveY));
+              }
             }
           }
 
-          if (Math.abs(smoothedMoveY) > 0.001) {
-            if (smoothedMoveY > 0) {
-              moveCamera('up', Math.abs(smoothedMoveY));
-            } else {
-              moveCamera('down', Math.abs(smoothedMoveY));
+          if (absoluteZoom > zoomThreshold * 0.002) {
+            if (zoom > 0.001) {
+              moveCamera('forward', zoom);
+            } else if (zoom < -0.001) {
+              moveCamera('backward', Math.abs(zoom));
             }
           }
         }
 
-        if (absoluteDistanceChange > zoomThreshold) {
-          const smoothedZoom = distanceChange * zoomSensitivity;
-
-          if (smoothedZoom > 0.001) {
-              moveCamera('forward', smoothedZoom);
-            } else if (smoothedZoom < -0.001) {
-              moveCamera('backward', Math.abs(smoothedZoom));
-            }
-        }
-
+        controls.lastTouch1 = curr1;
+        controls.lastTouch2 = curr2;
         controls.lastMidX = currMidX;
         controls.lastMidY = currMidY;
-        controls.lastDistance = currentDistance;
+        controls.lastDistance = Math.hypot(curr2.x - curr1.x, curr2.y - curr1.y);
 
         return;
       }
@@ -954,6 +969,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
       stopCounter,
       resetCounter,
       setIsOwnCursorActive,
+      accelCtx,
     ],
   );
 
@@ -1148,6 +1164,8 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
         controls.lastMidX = undefined;
         controls.lastMidY = undefined;
         controls.lastDistance = undefined;
+        controls.lastTouch1 = undefined;
+        controls.lastTouch2 = undefined;
       }
 
       e.preventDefault();
@@ -1164,7 +1182,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
   );
 
   const handleTouchEnd = useCallback(
-    (e) => {
+    async (e: TouchEvent) => {
       const canvas = rendererRef.current?.domElement;
       if (!canvas) return;
 
@@ -1273,7 +1291,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
               currentTraceSegmentsRef.current.push(result.element);
             }
           } else {
-            commitTrace();
+            await commitTrace();
           }
         }
 
@@ -1379,12 +1397,18 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
     let lastWheel = 0;
     let lastTouchMove = 0;
     let rafId: number | null = null;
+    let pendingMouseEvent: MouseEvent | null = null;
 
     const throttledMouseMove = (e: MouseEvent) => {
+      // Accumulate on every raw event — unthrottled, cheap
+      accumulateFromClient(e.clientX, e.clientY);
       needsRenderRef.current = true;
+      // Preview + camera throttled to one RAF frame, always using the latest position
+      pendingMouseEvent = e;
       if (rafId !== null) return;
       rafId = requestAnimationFrame(() => {
-        handleMouseMove(e);
+        if (pendingMouseEvent) handleMouseMove(pendingMouseEvent);
+        pendingMouseEvent = null;
         rafId = null;
       });
     };
@@ -1398,6 +1422,10 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
     };
 
     const throttledTouchMove = (e: TouchEvent) => {
+      // Accumulate on every raw event — unthrottled, cheap
+      if (e.touches.length === 1) {
+        accumulateFromClient(e.touches[0].clientX, e.touches[0].clientY);
+      }
       const now = performance.now();
       if (now - lastTouchMove < 32) return;
       lastTouchMove = now;
@@ -1407,6 +1435,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
 
     const wrappedMouseDown = (e: MouseEvent) => { needsRenderRef.current = true; handleMouseDown(e); };
     const wrappedMouseUp = (e: MouseEvent) => { needsRenderRef.current = true; handleMouseUp(e); };
+    const wrappedTouchEnd = (e: TouchEvent) => { needsRenderRef.current = true; handleTouchEnd(e); };
 
     canvas.addEventListener('mousedown', wrappedMouseDown);
     canvas.addEventListener('mouseup', wrappedMouseUp);
@@ -1417,7 +1446,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
     window.addEventListener('keyup', handleKeyUp);
     canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
     canvas.addEventListener('touchmove', throttledTouchMove, { passive: false });
-    canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+    canvas.addEventListener('touchend', wrappedTouchEnd, { passive: false });
     canvas.addEventListener('paste', handlePaste);
 
     return () => {
@@ -1431,7 +1460,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
       window.removeEventListener('keyup', handleKeyUp);
       canvas.removeEventListener('touchstart', handleTouchStart);
       canvas.removeEventListener('touchmove', throttledTouchMove);
-      canvas.removeEventListener('touchend', handleTouchEnd);
+      canvas.removeEventListener('touchend', wrappedTouchEnd);
       canvas.removeEventListener('paste', handlePaste);
     };
   }, [
@@ -1446,6 +1475,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext) => {
     handleTouchMove,
     handleTouchEnd,
     handlePaste,
+    accumulateFromClient,
   ]);
 
   return { deleteElement, undo, redo };
