@@ -26,6 +26,7 @@ export default function SizeSetter({ sizeRef, colorRef }: SizeSetterProps) {
           min={5}
           max={75}
           colorRef={colorRef}
+          thumbIcon="/images/icons/aspect_ratio.svg"
           shouldRotate={false}
         />
       </div>

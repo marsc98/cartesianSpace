@@ -59,57 +59,54 @@
 
       &::-webkit-slider-thumb {
         -webkit-appearance: none;
-        /* Override default look */
         appearance: none;
-
         width: 15px;
-        /* Set a specific slider handle width */
         height: 15px;
-        /* Slider handle height */
-
         background-color: #005066;
-
         border-radius: 50%;
         border: 5px solid #ffffffa0;
         box-shadow: 0px 10px 15px -3px rgba(181, 181, 181, 0.1);
-
         cursor: pointer;
-        /* Cursor on hover */
       }
 
       &::-moz-range-thumb {
         appearance: none;
-
         width: 15px;
-        /* Set a specific slider handle width */
         height: 15px;
-        /* Slider handle height */
-
         background-color: #005066;
-
         border-radius: 50%;
         border: 5px solid #ffffffa0;
         box-shadow: 0px 10px 15px -3px rgba(181, 181, 181, 0.1);
-
         cursor: pointer;
-        /* Cursor on hover */
       }
 
-      @media screen and (max-width: 768px) {
+      &.range-input--icon {
         &::-webkit-slider-thumb {
-
-          // box-shadow: 0 2px 24px rgba(255, 255, 255, 0.2);
-          box-shadow: 0px 10px 15px -3px rgba(181, 181, 181, 0.1);
-          border: 5px solid #ffffffa0;
+          width: 28px;
+          height: 28px;
+          background-image: var(--thumb-icon);
+          background-color: $background-color;
+          background-size: 64%;
+          background-repeat: no-repeat;
+          background-position: center;
+          border-radius: 50%;
+          border: 1px solid rgba(255, 255, 255);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+          cursor: pointer;
         }
 
         &::-moz-range-thumb {
-          width: 15px;
-          height: 15px;
-
-
-
-          border: 5px solid #ffffffa0;
+          width: 28px;
+          height: 28px;
+          background-image: var(--thumb-icon);
+          background-color: $background-color;
+          background-size: 64%;
+          background-repeat: no-repeat;
+          background-position: center;
+          border-radius: 50%;
+          border: 1px solid rgba(255, 255, 255);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+          cursor: pointer;
         }
       }
     }

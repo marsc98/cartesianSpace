@@ -13,9 +13,10 @@ interface RangeInputProps extends React.HTMLAttributes<HTMLDivElement> {
   colorRef?: React.MutableRefObject<string>;
   className?: string;
   shouldRotate?: boolean;
+  thumbIcon?: string;
 }
 
-const RangeInput = ({ isMobile, setElementSize, onValueChange, label, id, sizeRef, min, max, colorRef, className, shouldRotate = false, ...props }: RangeInputProps) => {
+const RangeInput = ({ isMobile, setElementSize, onValueChange, label, id, sizeRef, min, max, colorRef, className, shouldRotate = false, thumbIcon, ...props }: RangeInputProps) => {
   const [size, setSize] = useState<string | number>(sizeRef.current || 20);
 
   useEffect(() => {
@@ -65,7 +66,7 @@ const RangeInput = ({ isMobile, setElementSize, onValueChange, label, id, sizeRe
             type="number"
             min={min}
             max={max}
-            value={size}
+            value={Number(size).toFixed(2).toString()}
             onChange={e => handleChange(e.target.value)}
             onBlur={handleBlur}
           />
@@ -76,7 +77,8 @@ const RangeInput = ({ isMobile, setElementSize, onValueChange, label, id, sizeRe
       <div className={css["range-controls"]}>
         <button style={{ rotate: shouldRotate ? '90deg' : undefined }} type="button" onClick={decrease} className={css["range-btn"]}>-</button>
         <input
-          className={css["range-input"]}
+          className={`${css["range-input"]}${thumbIcon ? ` ${css["range-input--icon"]}` : ''}`}
+          style={thumbIcon ? { '--thumb-icon': `url(${thumbIcon})` } as React.CSSProperties : undefined}
           type="range"
           id={id}
           min={min}
