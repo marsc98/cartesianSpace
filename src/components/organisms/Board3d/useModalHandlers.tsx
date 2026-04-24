@@ -81,7 +81,7 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
   const { colorRef, drawerRef, activeCreativityRef, sizeRef } = useDrawing();
   const {
     elementsRef, editingInteractorRef, editingArrowsRef,
-    isDraggingRef, lastIntersected, originalColor, selectedTerrainRef,
+    isDraggingRef, waitingForFirstInteractionRef, lastIntersected, originalColor, selectedTerrainRef,
   } = useElements() as any;
   const { cartesianSpaceRef, functionsRef, functionRef, limitesRef, fontRef, textRef, axisRef } = useFunctions() as any;
   const { sceneRef, elementsStackRef, particleRef, mountRef } = useScene();
@@ -440,6 +440,8 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
               modalId: id,
               updateElementPosition,
               animationContent: <AnimationForm lastIntersected={lastIntersected} />,
+              waitingForFirstInteractionRef,
+              notify,
             })
           }
           handleMarkPosition={handleMarkPosition}

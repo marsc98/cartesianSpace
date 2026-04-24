@@ -91,7 +91,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
     elementsIsActive, setIsResizingElement, setElementsIsActive,
     elementsRef, searchingFacesRef, searchingPointRef, editingElementRef,
     isDraggingRef, editingInteractorRef, selectedTerrainRef, editingArrowsRef,
-    lastIntersected,
+    waitingForFirstInteractionRef, lastIntersected,
   } = useElements();
 
   const { setIsOwnCursorActive, modalIsOpenRef } = useUI();
@@ -419,6 +419,15 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
       const canvas = rendererRef.current?.domElement;
       if (!canvas) return;
 
+      if (
+        editingInteractorRef.current.type === 'freeReposition' &&
+        waitingForFirstInteractionRef?.current
+      ) {
+        waitingForFirstInteractionRef.current = false;
+        isDraggingRef.current = true;
+        return;
+      }
+
       if (searchingPointRef.current && searchingFacesRef.current) {
         const intersected = detectClickIntersection(
           e,
@@ -559,8 +568,12 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
         stopDragging();
       }
 
-      if (editingInteractorRef.current.type === 'freeReposition') {
+      if (editingInteractorRef.current.type === 'freeReposition' && editingInteractorRef.current.active) {
         editingArrowsRef?.current?.remove();
+        editingInteractorRef.current.active = false;
+        editingInteractorRef.current.type = '';
+        waitingForFirstInteractionRef.current = false;
+        notify?.('universeNavigator', 'neutral');
       }
 
       if (drawingRef.current && e.button === 0) {
@@ -979,6 +992,15 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
       const canvas = rendererRef.current?.domElement;
       if (!canvas) return;
 
+      if (
+        editingInteractorRef.current.type === 'freeReposition' &&
+        waitingForFirstInteractionRef?.current
+      ) {
+        waitingForFirstInteractionRef.current = false;
+        isDraggingRef.current = true;
+        return;
+      }
+
       controlsRef.current.isTwoFingerMove = false;
 
       if (e.touches.length === 1) {
@@ -1201,9 +1223,17 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
         controlsRef.current.lastY = remaining.clientY;
       }
 
-      // if (isDraggingRef.current) {
-      //   // stopDragging();
-      // }
+      if (isDraggingRef.current) {
+        stopDragging();
+      }
+
+      if (editingInteractorRef.current.type === 'freeReposition' && editingInteractorRef.current.active) {
+        editingArrowsRef?.current?.remove();
+        editingInteractorRef.current.active = false;
+        editingInteractorRef.current.type = '';
+        waitingForFirstInteractionRef.current = false;
+        notify?.('universeNavigator', 'neutral');
+      }
 
       if (
         searchingPointRef.current &&

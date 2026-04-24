@@ -24,6 +24,7 @@ interface ElementsContextValue {
   editingInteractorRef: React.MutableRefObject<EditingInteractorState>;
   editingArrowsRef: React.MutableRefObject<THREE.Group | null>;
   isDraggingRef: React.MutableRefObject<boolean>;
+  waitingForFirstInteractionRef: React.MutableRefObject<boolean>;
   lastIntersected: React.MutableRefObject<THREE.Mesh | null>;
   originalColor: React.MutableRefObject<THREE.Color | null>;
   searchingFacesRef: React.MutableRefObject<boolean>;
@@ -53,6 +54,7 @@ export const ElementsProvider = ({ children }: { children: React.ReactNode }) =>
   });
   const editingArrowsRef = useRef<THREE.Group | null>(null);
   const isDraggingRef = useRef(false);
+  const waitingForFirstInteractionRef = useRef(false);
   const lastIntersected = useRef<THREE.Mesh | null>(null);
   const originalColor = useRef<THREE.Color | null>(null);
   const searchingFacesRef = useRef(false);
@@ -68,7 +70,7 @@ export const ElementsProvider = ({ children }: { children: React.ReactNode }) =>
     elementsIsActive, setElementsIsActive,
     isResizingElement, setIsResizingElement,
     elementsRef, editingElementRef, editingInteractorRef,
-    editingArrowsRef, isDraggingRef, lastIntersected,
+    editingArrowsRef, isDraggingRef, waitingForFirstInteractionRef, lastIntersected,
     originalColor, searchingFacesRef, selectedTerrainRef,
     searchingPointRef, markersRef,
   // setters and refs are stable

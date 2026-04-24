@@ -42,6 +42,8 @@ export interface EditingModeContext {
   deleteElement?: (id: string) => void;
   fixModal?: () => void;
   updateElementPosition?: (x: number, y: number, control: boolean) => void;
+  waitingForFirstInteractionRef?: React.MutableRefObject<boolean>;
+  notify?: (iconName: string, variant: string, options?: { duration?: number }) => void;
 }
 
 export interface EditingMode {
