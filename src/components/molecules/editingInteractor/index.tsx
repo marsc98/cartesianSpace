@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import css from './index.module.scss';
 import IconButton from '../iconButton';
 import Button from '../../atoms/button';
+import RangeInput from '../../atoms/rangeInput';
 import { useSketch } from '../../../hooks/useSketch';
 import { useScene } from '../../../hooks/contexts/SceneContext';
 import type * as THREE from 'three';
@@ -50,6 +51,13 @@ const EditingInteractor = ({
 }: EditingInteractorProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hoveredAxis, setHoveredAxis] = useState<string | null>(null);
+  const [selectedAxes, setSelectedAxes] = useState<Set<'x' | 'y' | 'z'>>(new Set(['x', 'y', 'z']));
+  const prevDeltaRef = useRef(0);
+  const [delta, setDelta] = useState(0);
+  const [sensitivity, setSensitivity] = useState(1);
+  const sensitivityRef = useRef(1);
+  const deltaRangeRef = useRef<number>(0);
+  const sensitivityRangeRef = useRef<number>(1);
   const axisSegments = useRef<AxisSegment[]>([]);
   const mouseStartPos = useRef<Point2D>({ x: 0, y: 0 });
   const isDragging = useRef(false);
@@ -96,7 +104,7 @@ const EditingInteractor = ({
 
     ctx.clearRect(0, 0, width, height);
 
-    if (type === 'scale') {
+    if (type === 'scale' || type === 'reposition') {
       axisSegments.current = [];
     }
 
@@ -106,6 +114,7 @@ const EditingInteractor = ({
       label: string,
       axisName: string,
       isPositive: boolean,
+      isSelected: boolean,
     ) => {
       const origin = project3DTo2D(0, 0, 0);
       const end = project3DTo2D(
@@ -121,6 +130,7 @@ const EditingInteractor = ({
 
       ctx.strokeStyle = lineColor;
       ctx.lineWidth = lineWidth;
+      ctx.globalAlpha = isSelected ? 1 : 0.3;
       ctx.beginPath();
       ctx.moveTo(origin.x, origin.y);
       ctx.lineTo(end.x, end.y);
@@ -177,15 +187,16 @@ const EditingInteractor = ({
         const offsetY = isPositive ? 10 : -10;
         ctx.fillText(sign, end.x + offsetX, end.y + offsetY);
       }
+      ctx.globalAlpha = 1;
     };
 
-    drawAxisLine([1, 0, 0], '#cc0000', 'X', 'x', true);
-    drawAxisLine([1, 0, 0], '#0066cc', 'X', 'x', false);
-    drawAxisLine([0, 1, 0], '#cc0000', 'Y', 'y', true);
-    drawAxisLine([0, 1, 0], '#0066cc', 'Y', 'y', false);
-    drawAxisLine([0, 0, 1], '#0066cc', 'Z', 'z', false);
-    drawAxisLine([0, 0, 1], '#cc0000', 'Z', 'z', true);
-  }, [hoveredAxis, canvasRotation]);
+    drawAxisLine([1, 0, 0], '#cc0000', 'X', 'x', true, selectedAxes.has('x'));
+    drawAxisLine([1, 0, 0], '#0066cc', 'X', 'x', false, selectedAxes.has('x'));
+    drawAxisLine([0, 1, 0], '#cc0000', 'Y', 'y', true, selectedAxes.has('y'));
+    drawAxisLine([0, 1, 0], '#0066cc', 'Y', 'y', false, selectedAxes.has('y'));
+    drawAxisLine([0, 0, 1], '#0066cc', 'Z', 'z', false, selectedAxes.has('z'));
+    drawAxisLine([0, 0, 1], '#cc0000', 'Z', 'z', true, selectedAxes.has('z'));
+  }, [hoveredAxis, canvasRotation, selectedAxes]);
 
   const detectAxisHover = (mouseX: number, mouseY: number): string | null => {
     const threshold = 10;
@@ -241,56 +252,19 @@ const EditingInteractor = ({
       const hoveredAxisName = detectAxisHover(mouseX, mouseY);
       setHoveredAxis(hoveredAxisName);
       processAxisHover(hoveredAxisName);
-
-      if (hoveredAxisName && lastIntersected?.current?.parent?.scale) {
-        const correction = isMobile ? 150 : 250;
-        const deltaX = mouseX - correction;
-        const deltaY = correction - mouseY;
-        const axisLetter = hoveredAxisName.split('_')[0];
-
-        switch (axisLetter) {
-          case 'x': {
-            const scaleX = lastIntersected.current.parent.scale.x + (deltaX * (speedRefectorRef.current * 0.0001));
-            if (scaleX > 0.1) {
-              if (editingArrowsRef.current) editingArrowsRef.current.updatePosition(lastIntersected.current);
-              if (isReposition) {
-                lastIntersected.current.parent.position.x += (deltaX * (speedRefectorRef.current * 0.0001));
-              } else {
-                lastIntersected.current.parent.scale.x = scaleX;
-              }
-              needsRenderRef.current = true;
-            }
-            break;
-          }
-          case 'y': {
-            const scaleY = lastIntersected.current.parent.scale.y + (deltaY * (speedRefectorRef.current * 0.0001));
-            if (scaleY > 0.1) {
-              if (isReposition) {
-                lastIntersected.current.parent.position.y += (deltaY * (speedRefectorRef.current * 0.0001));
-                if (editingArrowsRef.current) editingArrowsRef.current.updatePosition(lastIntersected.current);
-              } else {
-                lastIntersected.current.parent.scale.y = scaleY;
-              }
-              needsRenderRef.current = true;
-            }
-            break;
-          }
-          case 'z': {
-            const scaleZ = lastIntersected.current.parent.scale.z - (deltaX * (speedRefectorRef.current * 0.0001));
-            if (scaleZ > 0.1) {
-              if (isReposition) {
-                lastIntersected.current.parent.position.z -= (deltaX * (speedRefectorRef.current * 0.0001));
-                if (editingArrowsRef.current) editingArrowsRef.current.updatePosition(lastIntersected.current);
-              } else {
-                lastIntersected.current.parent.scale.z = scaleZ;
-              }
-              needsRenderRef.current = true;
-            }
-            break;
-          }
-        }
-      }
     }
+  };
+
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (type !== 'scale' && type !== 'reposition') return;
+    const axis = detectAxisHover(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+    if (!axis) return;
+    const letter = axis.split('_')[0] as 'x' | 'y' | 'z';
+    setSelectedAxes((prev: Set<'x' | 'y' | 'z'>) => {
+      const next = new Set(prev);
+      next.has(letter) ? next.delete(letter) : next.add(letter);
+      return next;
+    });
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -462,6 +436,11 @@ const EditingInteractor = ({
 
   useEffect(() => {
     setType(editingInteractorRef.current.type);
+    setSelectedAxes(new Set(['x', 'y', 'z']));
+    prevDeltaRef.current = 0;
+    setDelta(0);
+    setSensitivity(1);
+    sensitivityRef.current = 1;
   }, [editingInteractorIsActive]);
 
   useEffect(() => {
@@ -498,6 +477,27 @@ const EditingInteractor = ({
     };
   }, []);
 
+  useEffect(() => {
+    if (type !== 'scale' && type !== 'reposition') return;
+    if (!lastIntersected?.current?.parent) return;
+    const diff = delta - prevDeltaRef.current;
+    prevDeltaRef.current = delta;
+    if (diff === 0) return;
+    const parent = lastIntersected.current.parent;
+    for (const axis of selectedAxes) {
+      const applied = diff * sensitivityRef.current;
+      if (type === 'scale') {
+        const next = parent.scale[axis] + applied;
+        if (next > 0.1) parent.scale[axis] = next;
+      } else {
+        parent.position[axis] += applied;
+        editingArrowsRef.current?.updatePosition(lastIntersected.current);
+      }
+    }
+    needsRenderRef.current = true;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [delta]);
+
   return (
     <div
       ref={windowRef}
@@ -532,6 +532,7 @@ const EditingInteractor = ({
           width={isMobile ? 100 : 500}
           height={isMobile ? 100 : 500}
           className={css['coordinate-system__canvas']}
+          onClick={handleCanvasClick}
           onMouseMove={handleMouseMove}
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
@@ -545,14 +546,47 @@ const EditingInteractor = ({
         />
       </div>
 
+      {(type === 'scale' || type === 'reposition') && (
+        <div className={css['range-controls-section']}>
+          <RangeInput
+            sizeRef={deltaRangeRef as React.MutableRefObject<number>}
+            min={-2}
+            max={2}
+            label="Delta"
+            onValueChange={v => setDelta(v)}
+          />
+          <RangeInput
+            sizeRef={sensitivityRangeRef as React.MutableRefObject<number>}
+            min={0.1}
+            max={5}
+            label="Sensibilidade"
+            onValueChange={v => { sensitivityRef.current = v; setSensitivity(v); }}
+          />
+        </div>
+      )}
+
       <div className={css['bottom-container']}>
-        <div className={css['coordinate-system__legend']}>
-          <p className={`${css['coordinate-system__legend-item']} ${css['coordinate-system__legend-item--positive']}`}>
-            Parte positiva do eixo
-          </p>
-          <p className={`${css['coordinate-system__legend-item']} ${css['coordinate-system__legend-item--negative']}`}>
-            Parte negativa do eixo
-          </p>
+        <div className={css['axis-toggles']}>
+          {(['x', 'y', 'z'] as const).map(axis => (
+            <div key={axis} className={css['axis-group']}>
+              <button
+                className={`${css['axis-toggle']} ${selectedAxes.has(axis) ? css['axis-toggle--active'] : ''}`}
+                onClick={() => setSelectedAxes((prev: Set<'x' | 'y' | 'z'>) => {
+                  const next = new Set(prev);
+                  next.has(axis) ? next.delete(axis) : next.add(axis);
+                  return next;
+                })}
+              >+{axis.toUpperCase()}</button>
+              <button
+                className={`${css['axis-toggle']} ${selectedAxes.has(axis) ? css['axis-toggle--active'] : ''}`}
+                onClick={() => setSelectedAxes((prev: Set<'x' | 'y' | 'z'>) => {
+                  const next = new Set(prev);
+                  next.has(axis) ? next.delete(axis) : next.add(axis);
+                  return next;
+                })}
+              >-{axis.toUpperCase()}</button>
+            </div>
+          ))}
         </div>
 
         <Button
