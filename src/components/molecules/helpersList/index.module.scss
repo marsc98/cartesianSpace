@@ -1,10 +1,13 @@
 .helpers-list-container {
   position: absolute;
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
   list-style: none;
-  padding: 0;
+  padding: 6px;
   margin: 0;
+  background: rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(6px);
+  border-radius: 12px;
 
   /* =============================================
    * POSICIONAMENTO COMPLETO (baseado na tabela)
@@ -73,17 +76,17 @@
   }
 
   .helper-item {
-    opacity: 0.6;
+    opacity: 0.55;
     text-align: center;
     cursor: pointer;
-    transition: transform 0.1s ease;
+    transition: transform 0.15s ease, opacity 0.15s ease;
 
     &[data-active="true"] {
       opacity: 1;
-      font-weight: bold;
     }
 
     &:hover {
+      opacity: 1;
       transform: scale(1.1);
     }
 

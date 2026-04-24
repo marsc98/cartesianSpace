@@ -107,12 +107,11 @@ export function ToolsManager({
       <HelpersList
         key="actionHelpers"
         id="actionHelpers"
-        isMobile={isMobile}
         listOpen={listOpen}
         setListOpen={setListOpen}
         list={actionHelpers}
-        position={isMobile ? "blc" : "bcr"}
-        jump={isMobile ? "bottom-5" : undefined}
+        position={isMobile ? "brr" : "bcr"}
+        jump={isMobile ? "bottom-5" : "bottom-1"}
       />
       <HelpersList
         key="sceneHelpers"
@@ -129,7 +128,7 @@ export function ToolsManager({
         setListOpen={setListOpen}
         list={topRightHelpersSec}
         position="trr"
-        jump="top-4.2"
+        jump="top-5"
       />
 
       {/* ── Controle de distância de interação ───────────────────────────── */}
@@ -147,6 +146,7 @@ export function ToolsManager({
           sizeRef={drawDistanceRef}
           shouldRotate={false}
           onValueChange={onDistanceChange}
+          thumbIcon="/images/icons/ruler.svg"
         />
       </div>
 
@@ -164,6 +164,7 @@ export function ToolsManager({
           max={100}
           label={velocityUnit}
           sizeRef={speedRefectorRef}
+          thumbIcon="/images/icons/speed.svg"
         />
       </div>
 

@@ -3,16 +3,10 @@
   align-items: center;
   position: relative;
 
-  &:hover {
-    transform: scale(1.1);
-  }
-
-  &[data-active="false"] {
-      opacity: 0.8;
-    }
-
   .icon-button {
-    padding: 8px;
+    padding: 10px;
+    min-width: 44px;
+    min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
