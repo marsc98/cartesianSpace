@@ -224,12 +224,12 @@ export function useSceneActions({ setRulerIsActive, rulerIsActive }: UseSceneAct
       y -= y * 0.0008;
       raycasterRef.current.setFromCamera({ x, y }, cameraRef.current);
       const objPos = (lastIntersected.current as any).parent.position;
-      const plane = ctrl ? planeXZ : planeXY;
-      plane.constant = ctrl ? -objPos.y : -objPos.z;
+      const plane = ctrl ? planeXY : planeXZ;
+      plane.constant = ctrl ? -objPos.z : -objPos.y;
       if (raycasterRef.current.ray.intersectPlane(plane, intersectionPoint)) {
         ctrl
-          ? objPos.set(intersectionPoint.x, objPos.y, intersectionPoint.z)
-          : objPos.set(intersectionPoint.x, intersectionPoint.y, objPos.z);
+          ? objPos.set(intersectionPoint.x, intersectionPoint.y, objPos.z)
+          : objPos.set(intersectionPoint.x, objPos.y, intersectionPoint.z);
         editingArrowsRef.current?.updatePosition(lastIntersected.current);
       }
     },
