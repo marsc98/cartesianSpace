@@ -22,13 +22,15 @@ const useNotifications = () => {
     const id = Date.now();
     setNotification({ id, iconName, variant, style: options.style ?? null, exiting: false });
 
-    exitTimerRef.current = setTimeout(() => {
-      setNotification((prev) => (prev?.id === id ? { ...prev, exiting: true } : prev));
-    }, duration);
+    if (duration >= 0) {
+      exitTimerRef.current = setTimeout(() => {
+        setNotification((prev: NotificationData | null) => (prev?.id === id ? { ...prev, exiting: true } : prev));
+      }, duration);
 
-    dismissTimerRef.current = setTimeout(() => {
-      setNotification(null);
-    }, duration + 400);
+      dismissTimerRef.current = setTimeout(() => {
+        setNotification(null);
+      }, duration + 400);
+    }
   }, []);
 
   return { notify, notification };

@@ -94,4 +94,38 @@ describe('useNotifications', () => {
     })
     expect(result.current.notification!.style).toBe('custom-style')
   })
+
+  it('duration: -1 não dispara exit timer', () => {
+    const { result } = renderHook(() => useNotifications())
+    act(() => {
+      result.current.notify('icon', 'info', { duration: -1 })
+    })
+    act(() => {
+      vi.advanceTimersByTime(10000)
+    })
+    expect(result.current.notification).not.toBeNull()
+    expect(result.current.notification!.exiting).toBe(false)
+  })
+
+  it('duration: -1 não dispara dismiss timer', () => {
+    const { result } = renderHook(() => useNotifications())
+    act(() => {
+      result.current.notify('icon', 'info', { duration: -1 })
+    })
+    act(() => {
+      vi.advanceTimersByTime(10000)
+    })
+    expect(result.current.notification).not.toBeNull()
+  })
+
+  it('notificação persistente é substituída por próxima chamada a notify', () => {
+    const { result } = renderHook(() => useNotifications())
+    act(() => {
+      result.current.notify('icon-a', 'info', { duration: -1 })
+    })
+    act(() => {
+      result.current.notify('icon-b', 'success')
+    })
+    expect(result.current.notification!.iconName).toBe('icon-b')
+  })
 })
