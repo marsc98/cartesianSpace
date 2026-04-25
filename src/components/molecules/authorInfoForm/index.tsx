@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import Button from '../../atoms/button';
+import React from 'react';
 
 // Ícone GitHub SVG
 const GithubIcon = () => (
@@ -16,16 +15,6 @@ const LinkedinIcon = () => (
 );
 
 export const MeuForm = ({ isMobile = false }) => {
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  const handleButtonClick = () => {
-    setIsAnimating(true);
-
-    setTimeout(() => {
-      window.open(import.meta.env.VITE_FORM_URL, '_blank');
-      setTimeout(() => setIsAnimating(false), 500);
-    }, 2000);
-  };
 
   return (
     <div
@@ -207,9 +196,12 @@ export const MeuForm = ({ isMobile = false }) => {
             >
               <p style={{ marginBottom: '16px' }}>
                 Muito obrigado por se interessar por esse sistema, ele foi
-                desenvolvido como meu trabalho de conclusão de curso, em
+                desenvolvido como meu trabalho de conclusão do curso de Engenharia de Computação na Universidade Estadual do Rio Grande do Sul (UERGS), em
                 conjunto com um dispositivo de hardware que interage com o
-                sistema se conectando como mouse em qualquer dispositivo.
+                sistema se conectando como mouse em qualquer dispositivo host.
+              </p>
+              <p style={{ marginBottom: '16px' }}>
+                A ideia dessa aplicação é misturar o Paint com o Geogreba e o Excalidraw e entregar algo que no final não lembre nenhum deles mas que permita a quem está utilizando expandir sua criatividade.
               </p>
               <p>
                 {isMobile ? 'Abaixo' : 'Ao lado'} está o resumo da monografia
@@ -218,6 +210,18 @@ export const MeuForm = ({ isMobile = false }) => {
               </p>
             </div>
           </div>
+
+          <p style={{ fontSize: '0.7rem', color: '#6b7280', marginTop: 'auto' }}>
+            © 2025 Marco Santos da Silva ·{' '}
+            <a
+              href="https://polyformproject.org/licenses/noncommercial/1.0.0"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#6b7280' }}
+            >
+              PolyForm Noncommercial License 1.0.0
+            </a>
+          </p>
         </div>
       </div>
     </div>
