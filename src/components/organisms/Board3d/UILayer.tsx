@@ -64,7 +64,7 @@ export function UILayer({
   activeTutorial,
   onCloseTutorial,
 }: UILayerProps) {
-  const { isOwnCursorActive, modalIsOpenRef } = useUI();
+  const { isOwnCursorActive, modalIsOpenRef, openModalCount } = useUI();
   const { modalsList, addModal, removeModal } = useModal();
   const { activeCreativityRef, colorRef, sizeRef } = useDrawingRefs();
   const { editingElementRef, editingInteractorRef, editingArrowsRef, lastIntersected } =
@@ -121,8 +121,8 @@ export function UILayer({
 
   return (
     <>
-      {/* Cursor personalizado (lápis / ícone de shape ativo) */}
-      {isOwnCursorActive && (
+      {/* Cursor personalizado (lápis / ícone de shape ativo) — oculto quando qualquer modal está aberto */}
+      {isOwnCursorActive && openModalCount === 0 && (
         <PencilCursor
           currentColor={currentColor}
           setCurrentColor={setCurrentColor}
@@ -142,7 +142,6 @@ export function UILayer({
           id={item.id}
           modalState={item}
           modalIsOpenRef={modalIsOpenRef}
-          setIsOwnCursorActive={() => { }}
           writingRef={writingRef}
         />
       ))}

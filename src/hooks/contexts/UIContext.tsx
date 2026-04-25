@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useRef, useState, useMemo } from 'react';
+import React, { createContext, useContext, useRef, useState, useMemo, useCallback } from 'react';
 
 interface UIContextValue {
   isOwnCursorActive: boolean;
@@ -11,6 +11,9 @@ interface UIContextValue {
   setStarsAreActive: React.Dispatch<React.SetStateAction<boolean>>;
   modalIsOpenRef: React.MutableRefObject<boolean>;
   openMenuRef: React.MutableRefObject<boolean>;
+  openModalCount: number;
+  incrementModalCount: () => void;
+  decrementModalCount: () => void;
 }
 
 const UIContext = createContext<UIContextValue | null>(null);
@@ -20,9 +23,13 @@ export const UIProvider = ({ children }: { children: React.ReactNode }) => {
   const [uploadFileIsActive, setUploadFileIsActive] = useState(false);
   const [scenesIsOpen, setScenesIsOpen] = useState(false);
   const [starsAreActive, setStarsAreActive] = useState(true);
+  const [openModalCount, setOpenModalCount] = useState(0);
 
   const modalIsOpenRef = useRef(false);
   const openMenuRef = useRef(false);
+
+  const incrementModalCount = useCallback(() => setOpenModalCount((n) => n + 1), []);
+  const decrementModalCount = useCallback(() => setOpenModalCount((n) => Math.max(0, n - 1)), []);
 
   const contextValue = useMemo(() => ({
     isOwnCursorActive, setIsOwnCursorActive,
@@ -30,9 +37,10 @@ export const UIProvider = ({ children }: { children: React.ReactNode }) => {
     scenesIsOpen, setScenesIsOpen,
     starsAreActive, setStarsAreActive,
     modalIsOpenRef, openMenuRef,
+    openModalCount, incrementModalCount, decrementModalCount,
   }), [
     isOwnCursorActive, uploadFileIsActive, scenesIsOpen,
-    starsAreActive,
+    starsAreActive, openModalCount, incrementModalCount, decrementModalCount,
   ]);
 
   return (

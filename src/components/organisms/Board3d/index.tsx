@@ -93,6 +93,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
   const {
     isOwnCursorActive, setIsOwnCursorActive,
     starsAreActive, setStarsAreActive,
+    openModalCount,
   } = useUI();
 
   const { modalsList } = useModal();
@@ -156,9 +157,9 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
   }, [socketId, setCoordinates]);
 
   useEffect(() => {
-    document.body.style.cursor = isOwnCursorActive ? 'none' : 'default';
+    document.body.style.cursor = (isOwnCursorActive && openModalCount === 0) ? 'none' : 'default';
     return () => { document.body.style.cursor = 'default'; };
-  }, [isOwnCursorActive]);
+  }, [isOwnCursorActive, openModalCount]);
 
   // ── Loader ────────────────────────────────────────────────────────────────
   const handleSceneReady = useCallback(() => {
@@ -399,7 +400,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
       onTouchMove={handleTouchMove}
       style={{
         cursor: searchingPointRef.current ? 'crosshair'
-          : isOwnCursorActive ? 'none'
+          : (isOwnCursorActive && openModalCount === 0) ? 'none'
             : controlsRef.current?.mouseDown ? 'grabbing'
               : 'grab',
       }}

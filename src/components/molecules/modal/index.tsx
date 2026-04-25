@@ -6,17 +6,18 @@ import { useModal } from '../../../hooks/useModal';
 import IconButton from '../iconButton';
 import { safeGetItem, safeSetItem } from '../../../utils/storage';
 import { useIsMobile } from '../../../hooks/useIsMobile';
+import { useUI } from '../../../hooks/contexts/UIContext';
 import type { ModalInstance } from '../../../types';
 
 interface ModalProps {
-  setIsOwnCursorActive: (active: boolean) => void;
   modalIsOpenRef: React.MutableRefObject<boolean>;
   id: string;
   modalState: ModalInstance;
   writingRef: React.MutableRefObject<boolean>;
 }
 
-function Modal({ setIsOwnCursorActive, modalIsOpenRef, id, modalState, writingRef }: ModalProps) {
+function Modal({ modalIsOpenRef, id, modalState, writingRef }: ModalProps) {
+  const { incrementModalCount, decrementModalCount } = useUI();
   const {
     showSecondary,
     setShowSecondary,
@@ -352,9 +353,10 @@ function Modal({ setIsOwnCursorActive, modalIsOpenRef, id, modalState, writingRe
   };
 
   useEffect(() => {
-    setIsOwnCursorActive(false);
+    incrementModalCount();
     addModalRef(id, modalRef as React.RefObject<HTMLDivElement>);
     return () => {
+      decrementModalCount();
       document.removeEventListener('mousemove', handleGlobalMouseMove);
       document.removeEventListener('mouseup', handleGlobalMouseUp);
       document.removeEventListener('touchmove', handleGlobalTouchMove);
