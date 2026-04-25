@@ -42,11 +42,7 @@ export const useKeyboardEvents = (ctx: UniverseContext, {
         setLinePoints([]);
         setAwaitingSecondClick(false);
 
-        if (!modalIsOpenRef.current) {
-          drawingRef.current = false;
-          setIsDrawing(false);
-          setIsOwnCursorActive(false);
-        }
+        handleStopAll();
       }
 
       if (e.key === 'Shift') controlsRef.current.shiftPressed = true;
@@ -124,10 +120,6 @@ export const useKeyboardEvents = (ctx: UniverseContext, {
     [
       setLinePoints,
       setAwaitingSecondClick,
-      modalIsOpenRef,
-      drawingRef,
-      setIsDrawing,
-      setIsOwnCursorActive,
       controlsRef,
       writingRef,
       keysHeldRef,

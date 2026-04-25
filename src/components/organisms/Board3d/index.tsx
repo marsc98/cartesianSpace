@@ -86,7 +86,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
   const { setFunctionsOpen, writingRef } = useFunctions();
 
   const {
-    setElementsIsActive, elementsRef, editingInteractorRef,
+    elementsIsActive, setElementsIsActive, elementsRef, editingInteractorRef,
     isDraggingRef, lastIntersected, searchingFacesRef, searchingPointRef,
   } = useElements();
 
@@ -220,7 +220,10 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
     setBoardIsActive(false);
     setIsOwnCursorActive(false);
     elementsRef.current.active = false;
-  }, [drawerRef, drawingRef, setIsDrawing, setElementsIsActive, writingRef, setIsOwnCursorActive, elementsRef]);
+    searchingPointRef.current = false;
+    searchingFacesRef.current = false;
+    setPencilIsActive(false);
+  }, [drawerRef, drawingRef, setIsDrawing, setElementsIsActive, writingRef, setIsOwnCursorActive, elementsRef, searchingPointRef, searchingFacesRef, setPencilIsActive]);
 
   const stopDragging = useCallback(() => {
     isDraggingRef.current = false;
@@ -366,9 +369,9 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
     { iconName: isFullscreen ? 'fullscreenExit' : 'fullscreen', hoverText: 'Tela cheia', onClick: isFullscreen ? closeFullscreen : openFullscreen, active: true, visible: true },
     { iconName: 'movePhone', hoverText: 'Movimentar cena', onClick: () => setViewWithAccelerometer((p) => !p), active: viewWithAccelerometer, visible: 'DeviceMotionEvent' in window && navigator.maxTouchPoints > 0 },
     { iconName: 'stars', hoverText: starsAreActive ? 'Remover Estrelas' : 'Adicionar Estrelas', onClick: () => scene.handleStars(starsAreActive, setStarsAreActive), active: starsAreActive, visible: true },
-    { iconName: 'stop', hoverText: 'Parar todas interações (Esc)', onClick: handleStopAll, active: isDrawing || isWriting, visible: true },
+    { iconName: 'stop', hoverText: 'Parar todas interações (Esc)', onClick: handleStopAll, active: isDrawing || isWriting || elementsIsActive || boardIsActive || pencilIsActive, visible: true },
     { iconName: 'ruler', hoverText: 'Ativar régua (r)', onClick: scene.handleRuler, active: rulerIsActive, visible: true },
-  ], [modalHandlers, activeModalFormIds, isFullscreen, viewWithAccelerometer, starsAreActive, isDrawing, isWriting, rulerIsActive, scene, handleStopAll, closeFullscreen, openFullscreen]);
+  ], [modalHandlers, activeModalFormIds, isFullscreen, viewWithAccelerometer, starsAreActive, isDrawing, isWriting, elementsIsActive, boardIsActive, pencilIsActive, rulerIsActive, scene, handleStopAll, closeFullscreen, openFullscreen]);
 
   const actionHelpers = useMemo(() => [
     { iconName: 'save', hoverText: 'Salvar (Ctrl+S)', onClick: () => updateSketch().then(() => notify('save', 'success')).catch(() => notify('save', 'error')), active: historySize.past > 0, visible: true },
