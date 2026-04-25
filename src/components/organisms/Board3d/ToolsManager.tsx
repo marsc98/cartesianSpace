@@ -8,6 +8,7 @@ import { useSession } from '../../../hooks/contexts/SessionContext';
 import { useDrawingRefs } from '../../../hooks/contexts/DrawingContext';
 import { useDepthIndicator } from '../../../hooks/useDepthIndicator';
 import { useUnits } from '../../../hooks/contexts/UnitsContext';
+import { safeSetItem } from '../../../utils/storage';
 import type { NotificationData } from '../../../hooks/useNotifications';
 import css from './index.module.scss';
 
@@ -145,7 +146,10 @@ export function ToolsManager({
           label={distanceUnit}
           sizeRef={drawDistanceRef}
           shouldRotate={false}
-          onValueChange={onDistanceChange}
+          onValueChange={(val) => {
+            onDistanceChange(val);
+            safeSetItem('drawDistance', String(val));
+          }}
           thumbIcon="/images/icons/ruler.svg"
         />
       </div>
@@ -164,6 +168,7 @@ export function ToolsManager({
           max={100}
           label={velocityUnit}
           sizeRef={speedRefectorRef}
+          onValueChange={(val) => safeSetItem('speed', String(val))}
           thumbIcon="/images/icons/speed.svg"
         />
       </div>

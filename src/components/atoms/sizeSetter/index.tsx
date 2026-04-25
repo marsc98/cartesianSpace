@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import RangeInput from "../rangeInput";
 import { useUnits } from "../../../hooks/contexts/UnitsContext";
+import { safeSetItem } from "../../../utils/storage";
 import css from "./index.module.scss";
 
 interface SizeSetterProps {
@@ -14,6 +15,7 @@ export default function SizeSetter({ sizeRef, colorRef }: SizeSetterProps) {
 
   const handleSizeChange = (newSize: number) => {
     setSize(newSize);
+    safeSetItem('size', String(newSize));
   };
 
   return (

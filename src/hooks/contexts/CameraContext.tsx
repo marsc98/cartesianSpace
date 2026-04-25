@@ -28,7 +28,7 @@ export const CameraProvider = ({ children }: { children: React.ReactNode }) => {
     rightButton: false,
     lastClickTime: 0,
   });
-  const speedRefectorRef = useRef(10);
+  const speedRefectorRef = useRef<number>(safeGetParsed('speed', isValidSpeed) ?? 10);
   const keysHeldRef = useRef(new Set<string>());
   const rotationRef = useRef<CameraRotationState>({
     x: 0, y: 0, z: 0,
@@ -37,11 +37,17 @@ export const CameraProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   useEffect(() => {
-    const storedSpeed = safeGetParsed('speed', isValidSpeed);
-    if (storedSpeed !== null) speedRefectorRef.current = storedSpeed;
+    const handleSave = () => {
+      safeSetItem('speed', String(speedRefectorRef.current));
+    };
+
+    window.addEventListener('beforeunload', handleSave);
+    window.addEventListener('pagehide', handleSave);
 
     return () => {
-      safeSetItem('speed', String(speedRefectorRef.current));
+      handleSave();
+      window.removeEventListener('beforeunload', handleSave);
+      window.removeEventListener('pagehide', handleSave);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

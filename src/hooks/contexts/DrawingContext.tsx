@@ -29,7 +29,6 @@ interface DrawingRefsValue {
   sizeRef: React.MutableRefObject<number>;
   drawDistanceRef: React.MutableRefObject<number>;
   rulerRef: React.MutableRefObject<RulerState>;
-  planesRef: React.MutableRefObject<boolean>;
 }
 
 export type DrawingContextValue = DrawingStateValue & DrawingRefsValue;
@@ -55,24 +54,27 @@ export const DrawingProvider = ({ children }: { children: React.ReactNode }) => 
   const currentTraceSegmentsRef = useRef<unknown[]>([]);
   const drawerRef = useRef<DrawerState>({ size: 20, active: false, selectedType: '2d', color: '#ff0000' });
   const activeCreativityRef = useRef<CreativityRef>({ id: '2dTrace', name: '2D', type: 'traces' });
-  const colorRef = useRef('#ff0000');
-  const sizeRef = useRef(10);
-  const drawDistanceRef = useRef(10);
+  const colorRef = useRef<string>(safeGetValidated('color', isValidColor) ?? '#ff0000');
+  const sizeRef = useRef<number>(safeGetParsed('size', isValidSize) ?? 10);
+  const drawDistanceRef = useRef<number>(
+    safeGetParsed('drawDistance', (v): v is number => typeof v === 'number' && isFinite(v) && v >= 10 && v <= 100) ?? 10
+  );
   const rulerRef = useRef<RulerState>({ active: false, object: null });
-  const planesRef = useRef(false);
 
   useEffect(() => {
-    const storedColor = safeGetValidated('color', isValidColor);
-    const storedSize = safeGetParsed('size', isValidSize);
-    const storedDistance = safeGetParsed('drawDistance', (v): v is number => typeof v === 'number' && isFinite(v) && v >= 10 && v <= 100);
-    if (storedColor !== null) colorRef.current = storedColor;
-    if (storedSize !== null) sizeRef.current = storedSize;
-    if (storedDistance !== null) drawDistanceRef.current = storedDistance;
-
-    return () => {
+    const handleSave = () => {
       safeSetItem('color', colorRef.current);
       safeSetItem('size', String(sizeRef.current));
       safeSetItem('drawDistance', String(drawDistanceRef.current));
+    };
+
+    window.addEventListener('beforeunload', handleSave);
+    window.addEventListener('pagehide', handleSave);
+
+    return () => {
+      handleSave();
+      window.removeEventListener('beforeunload', handleSave);
+      window.removeEventListener('pagehide', handleSave);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -88,7 +90,7 @@ export const DrawingProvider = ({ children }: { children: React.ReactNode }) => 
     drawingRef, drawingStartedRef, drawingElementRef,
     initialElementsCoordinatesRef, lineBetweenPointsRef,
     currentTraceSegmentsRef, drawerRef, activeCreativityRef,
-    colorRef, sizeRef, drawDistanceRef, rulerRef, planesRef,
+    colorRef, sizeRef, drawDistanceRef, rulerRef,
   }), []);
 
   return (
