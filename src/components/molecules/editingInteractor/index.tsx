@@ -1,15 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import css from './index.module.scss';
-import IconButton from '../iconButton';
 import Button from '../../atoms/button';
-import RangeInput from '../../atoms/rangeInput';
 import { useSketch } from '../../../hooks/useSketch';
 import { useScene } from '../../../hooks/contexts/SceneContext';
-import type * as THREE from 'three';
+import * as THREE from 'three';
 import type { EditingInteractorState, CameraControls } from '../../../types';
+import RangeInput from '../../atoms/rangeInput';
 
 interface EditingInteractorProps {
-  speedRefectorRef: React.MutableRefObject<number>;
   editingArrowsRef: React.MutableRefObject<{
     selectAxis: (axis: string) => void;
     restoreAllColors: () => void;
@@ -17,13 +15,9 @@ interface EditingInteractorProps {
     remove: () => void;
     highlightArrow?: (axis: string | null) => void;
   } | null>;
-  isMobile: boolean;
   editingInteractorIsActive: boolean;
   editingInteractorRef: React.MutableRefObject<EditingInteractorState>;
-  setEditingInteractorIsActive: (active: boolean) => void;
   controlsRef: React.MutableRefObject<CameraControls>;
-  stopResize: () => void;
-  coordinates: { x: number; y: number } | null;
   lastIntersected: React.MutableRefObject<THREE.Mesh | null>;
 }
 
@@ -38,37 +32,41 @@ interface AxisSegment {
 }
 
 const EditingInteractor = ({
-  speedRefectorRef,
   editingArrowsRef,
-  isMobile,
   editingInteractorIsActive,
   editingInteractorRef,
-  setEditingInteractorIsActive,
   controlsRef,
-  stopResize,
-  coordinates,
   lastIntersected,
 }: EditingInteractorProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hoveredAxis, setHoveredAxis] = useState<string | null>(null);
   const [selectedAxes, setSelectedAxes] = useState<Set<'x' | 'y' | 'z'>>(new Set(['x', 'y', 'z']));
-  const prevDeltaRef = useRef(0);
-  const [delta, setDelta] = useState(0);
-  const [sensitivity, setSensitivity] = useState(1);
-  const sensitivityRef = useRef(1);
-  const deltaRangeRef = useRef<number>(0);
-  const sensitivityRangeRef = useRef<number>(1);
+  const [selectedDirections, setSelectedDirections] = useState<Set<string>>(
+    new Set(['x_pos', 'x_neg', 'y_pos', 'y_neg', 'z_pos', 'z_neg']),
+  );
   const axisSegments = useRef<AxisSegment[]>([]);
   const mouseStartPos = useRef<Point2D>({ x: 0, y: 0 });
   const isDragging = useRef(false);
   const [canvasRotation, setCanvasRotation] = useState({ x: 25, y: 45 });
   const [type, setType] = useState('scale');
-  const windowRef = useRef<HTMLDivElement>(null);
 
-  const [position, setPosition] = useState({ top: 0, left: 0 });
-  const isDraggingButton = useRef(false);
-  const dragStartPos = useRef<Point2D>({ x: 0, y: 0 });
-  const dragStartPosition = useRef({ top: 0, left: 0 });
+  const [sensitivity, setSensitivity] = useState(0.1);
+  const sensitivityRef = useRef(0.1);
+
+  const [scaleValues, setScaleValues] = useState({ x: 1, y: 1, z: 1 });
+
+  const readWorldSize = () => {
+    const mesh = lastIntersected.current;
+    if (!mesh?.parent) return null;
+    if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox();
+    const bb = mesh.geometry.boundingBox!;
+    const s = mesh.parent.scale;
+    return {
+      x: (bb.max.x - bb.min.x) * s.x,
+      y: (bb.max.y - bb.min.y) * s.y,
+      z: (bb.max.z - bb.min.z) * s.z,
+    };
+  };
 
   const { updateElementById } = useSketch();
   const { needsRenderRef } = useScene();
@@ -107,6 +105,13 @@ const EditingInteractor = ({
     if (type === 'scale' || type === 'reposition') {
       axisSegments.current = [];
     }
+
+    const getIsSelected = (axisName: string, isPositive: boolean): boolean => {
+      if (type === 'reposition') {
+        return selectedDirections.has(`${axisName}_${isPositive ? 'pos' : 'neg'}`);
+      }
+      return selectedAxes.has(axisName as 'x' | 'y' | 'z');
+    };
 
     const drawAxisLine = (
       direction: [number, number, number],
@@ -190,13 +195,13 @@ const EditingInteractor = ({
       ctx.globalAlpha = 1;
     };
 
-    drawAxisLine([1, 0, 0], '#cc0000', 'X', 'x', true, selectedAxes.has('x'));
-    drawAxisLine([1, 0, 0], '#0066cc', 'X', 'x', false, selectedAxes.has('x'));
-    drawAxisLine([0, 1, 0], '#cc0000', 'Y', 'y', true, selectedAxes.has('y'));
-    drawAxisLine([0, 1, 0], '#0066cc', 'Y', 'y', false, selectedAxes.has('y'));
-    drawAxisLine([0, 0, 1], '#0066cc', 'Z', 'z', false, selectedAxes.has('z'));
-    drawAxisLine([0, 0, 1], '#cc0000', 'Z', 'z', true, selectedAxes.has('z'));
-  }, [hoveredAxis, canvasRotation, selectedAxes]);
+    drawAxisLine([1, 0, 0], '#cc0000', 'X', 'x', true,  getIsSelected('x', true));
+    drawAxisLine([1, 0, 0], '#0066cc', 'X', 'x', false, getIsSelected('x', false));
+    drawAxisLine([0, 1, 0], '#cc0000', 'Y', 'y', true,  getIsSelected('y', true));
+    drawAxisLine([0, 1, 0], '#0066cc', 'Y', 'y', false, getIsSelected('y', false));
+    drawAxisLine([0, 0, 1], '#0066cc', 'Z', 'z', false, getIsSelected('z', false));
+    drawAxisLine([0, 0, 1], '#cc0000', 'Z', 'z', true,  getIsSelected('z', true));
+  }, [hoveredAxis, canvasRotation, selectedAxes, selectedDirections, type]);
 
   const detectAxisHover = (mouseX: number, mouseY: number): string | null => {
     const threshold = 10;
@@ -259,12 +264,20 @@ const EditingInteractor = ({
     if (type !== 'scale' && type !== 'reposition') return;
     const axis = detectAxisHover(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
     if (!axis) return;
-    const letter = axis.split('_')[0] as 'x' | 'y' | 'z';
-    setSelectedAxes((prev: Set<'x' | 'y' | 'z'>) => {
-      const next = new Set(prev);
-      next.has(letter) ? next.delete(letter) : next.add(letter);
-      return next;
-    });
+    if (type === 'reposition') {
+      setSelectedDirections((prev: Set<string>) => {
+        const next = new Set(prev);
+        next.has(axis) ? next.delete(axis) : next.add(axis);
+        return next;
+      });
+    } else {
+      const letter = axis.split('_')[0] as 'x' | 'y' | 'z';
+      setSelectedAxes((prev: Set<'x' | 'y' | 'z'>) => {
+        const next = new Set(prev);
+        next.has(letter) ? next.delete(letter) : next.add(letter);
+        return next;
+      });
+    }
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -356,91 +369,51 @@ const EditingInteractor = ({
     }
   };
 
-  const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
+  const handleTouchEnd = (_e: React.TouchEvent<HTMLCanvasElement>) => {
     if (type === 'rotation') {
       isDragging.current = false;
     }
-    // TouchEvent doesn't have offsetX/offsetY — clear hover state on touch end
     setHoveredAxis(null);
   };
 
-  const handleButtonMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    isDraggingButton.current = true;
-    dragStartPos.current = { x: e.clientX, y: e.clientY };
-    dragStartPosition.current = { top: position.top, left: position.left };
-
-    document.addEventListener('mousemove', handleGlobalMouseMove);
-    document.addEventListener('mouseup', handleGlobalMouseUp);
+  const applyStep = (dir: 1 | -1) => {
+    if (!lastIntersected?.current?.parent) return;
+    const parent = lastIntersected.current.parent;
+    const stepValue = sensitivityRef.current;
+    if (type === 'scale') {
+      for (const axis of selectedAxes) {
+        const next = parent.scale[axis] + dir * stepValue;
+        if (next > 0.1) parent.scale[axis] = next;
+      }
+      const ws = readWorldSize();
+      if (ws) setScaleValues(ws);
+    } else if (type === 'reposition') {
+      for (const dirKey of selectedDirections) {
+        const [ax, sign] = dirKey.split('_');
+        const multiplier = (sign === 'pos' ? 1 : -1) * dir;
+        parent.position[ax as 'x' | 'y' | 'z'] += multiplier * stepValue;
+      }
+      editingArrowsRef.current?.updatePosition(lastIntersected.current);
+    }
+    needsRenderRef.current = true;
   };
 
-  const handleGlobalMouseMove = (e: MouseEvent) => {
-    if (isDraggingButton.current) {
-      e.preventDefault();
-      const deltaX = e.clientX - dragStartPos.current.x;
-      const deltaY = e.clientY - dragStartPos.current.y;
-
-      setPosition({
-        top: dragStartPosition.current.top + deltaY,
-        left: dragStartPosition.current.left + deltaX,
-      });
-    }
-  };
-
-  const handleGlobalMouseUp = () => {
-    if (isDraggingButton.current) {
-      isDraggingButton.current = false;
-      document.removeEventListener('mousemove', handleGlobalMouseMove);
-      document.removeEventListener('mouseup', handleGlobalMouseUp);
-    }
-  };
-
-  const handleButtonTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (e.touches.length === 1) {
-      isDraggingButton.current = true;
-      const touch = e.touches[0];
-      dragStartPos.current = { x: touch.clientX, y: touch.clientY };
-      dragStartPosition.current = { top: position.top, left: position.left };
-
-      document.addEventListener('touchmove', handleGlobalTouchMove, { passive: false });
-      document.addEventListener('touchend', handleGlobalTouchEnd);
-    }
-  };
-
-  const handleGlobalTouchMove = (e: TouchEvent) => {
-    if (isDraggingButton.current && e.touches.length === 1) {
-      e.preventDefault();
-      const touch = e.touches[0];
-      const deltaX = touch.clientX - dragStartPos.current.x;
-      const deltaY = touch.clientY - dragStartPos.current.y;
-
-      setPosition({
-        top: dragStartPosition.current.top + deltaY,
-        left: dragStartPosition.current.left + deltaX,
-      });
-    }
-  };
-
-  const handleGlobalTouchEnd = () => {
-    if (isDraggingButton.current) {
-      isDraggingButton.current = false;
-      document.removeEventListener('touchmove', handleGlobalTouchMove);
-      document.removeEventListener('touchend', handleGlobalTouchEnd);
-    }
+  const getDisplacementLabel = (axis: 'x' | 'y' | 'z'): string => {
+    const hasPos = selectedDirections.has(`${axis}_pos`);
+    const hasNeg = selectedDirections.has(`${axis}_neg`);
+    const step = sensitivity.toFixed(2);
+    if (hasPos && hasNeg) return `±${step}`;
+    if (hasPos) return `+${step}`;
+    if (hasNeg) return `−${step}`;
+    return '0';
   };
 
   useEffect(() => {
     setType(editingInteractorRef.current.type);
     setSelectedAxes(new Set(['x', 'y', 'z']));
-    prevDeltaRef.current = 0;
-    setDelta(0);
-    setSensitivity(1);
-    sensitivityRef.current = 1;
+    setSelectedDirections(new Set(['x_pos', 'x_neg', 'y_pos', 'y_neg', 'z_pos', 'z_neg']));
+    const ws = readWorldSize();
+    if (ws) setScaleValues(ws);
   }, [editingInteractorIsActive]);
 
   useEffect(() => {
@@ -469,68 +442,32 @@ const EditingInteractor = ({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (updateElementById as any)(particleId, updatedElement);
       }
-
-      document.removeEventListener('mousemove', handleGlobalMouseMove);
-      document.removeEventListener('mouseup', handleGlobalMouseUp);
-      document.removeEventListener('touchmove', handleGlobalTouchMove);
-      document.removeEventListener('touchend', handleGlobalTouchEnd);
     };
   }, []);
 
-  useEffect(() => {
-    if (type !== 'scale' && type !== 'reposition') return;
-    if (!lastIntersected?.current?.parent) return;
-    const diff = delta - prevDeltaRef.current;
-    prevDeltaRef.current = delta;
-    if (diff === 0) return;
-    const parent = lastIntersected.current.parent;
-    for (const axis of selectedAxes) {
-      const applied = diff * sensitivityRef.current;
-      if (type === 'scale') {
-        const next = parent.scale[axis] + applied;
-        if (next > 0.1) parent.scale[axis] = next;
-      } else {
-        parent.position[axis] += applied;
-        editingArrowsRef.current?.updatePosition(lastIntersected.current);
-      }
-    }
-    needsRenderRef.current = true;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [delta]);
+  const toggleAxis = (axis: 'x' | 'y' | 'z') => {
+    setSelectedAxes((prev: Set<'x' | 'y' | 'z'>) => {
+      const next = new Set(prev);
+      next.has(axis) ? next.delete(axis) : next.add(axis);
+      return next;
+    });
+  };
+
+  const toggleDirection = (key: string) => {
+    setSelectedDirections((prev: Set<string>) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  };
 
   return (
-    <div
-      ref={windowRef}
-      className={css['coordinate-system']}
-      style={{
-        top: `${(coordinates?.y ?? 0) + position.top}px`,
-        left: `${(coordinates?.x ?? 0) + position.left}px`,
-        transform: 'translate(-50%, -50%)',
-      }}
-    >
-      <IconButton
-        className={css['move']}
-        iconName="move"
-        hoverText="Mover janela"
-        onMouseDown={handleButtonMouseDown}
-        onTouchStart={handleButtonTouchStart}
-        style={{
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          zIndex: 10000000000000,
-          cursor: isDraggingButton.current ? 'grabbing' : 'grab',
-          opacity: isDraggingButton.current ? 1 : 0.6,
-          userSelect: 'none',
-          touchAction: 'none',
-        }}
-      />
-
+    <div className={css['coordinate-system']}>
       <div className={css['coordinate-system__canvas-container']}>
         <canvas
           ref={canvasRef}
-          width={isMobile ? 100 : 500}
-          height={isMobile ? 100 : 500}
+          width={300}
+          height={300}
           className={css['coordinate-system__canvas']}
           onClick={handleCanvasClick}
           onMouseMove={handleMouseMove}
@@ -546,62 +483,92 @@ const EditingInteractor = ({
         />
       </div>
 
-      {(type === 'scale' || type === 'reposition') && (
-        <div className={css['range-controls-section']}>
-          <RangeInput
-            sizeRef={deltaRangeRef as React.MutableRefObject<number>}
-            min={-2}
-            max={2}
-            label="Delta"
-            onValueChange={v => setDelta(v)}
-          />
-          <RangeInput
-            sizeRef={sensitivityRangeRef as React.MutableRefObject<number>}
-            min={0.1}
-            max={5}
-            label="Sensibilidade"
-            onValueChange={v => { sensitivityRef.current = v; setSensitivity(v); }}
-          />
-        </div>
-      )}
-
       <div className={css['bottom-container']}>
-        <div className={css['axis-toggles']}>
-          {(['x', 'y', 'z'] as const).map(axis => (
-            <div key={axis} className={css['axis-group']}>
-              <button
-                className={`${css['axis-toggle']} ${selectedAxes.has(axis) ? css['axis-toggle--active'] : ''}`}
-                onClick={() => setSelectedAxes((prev: Set<'x' | 'y' | 'z'>) => {
-                  const next = new Set(prev);
-                  next.has(axis) ? next.delete(axis) : next.add(axis);
-                  return next;
-                })}
-              >+{axis.toUpperCase()}</button>
-              <button
-                className={`${css['axis-toggle']} ${selectedAxes.has(axis) ? css['axis-toggle--active'] : ''}`}
-                onClick={() => setSelectedAxes((prev: Set<'x' | 'y' | 'z'>) => {
-                  const next = new Set(prev);
-                  next.has(axis) ? next.delete(axis) : next.add(axis);
-                  return next;
-                })}
-              >-{axis.toUpperCase()}</button>
+        {type === 'scale' && (
+          <>
+            <div className={css['values-display']}>
+              {(['x', 'y', 'z'] as const).map(axis => (
+                <span key={axis} className={css['value-item']} data-axis={axis}>
+                  {axis.toUpperCase()}: {scaleValues[axis].toFixed(2)}
+                </span>
+              ))}
             </div>
-          ))}
-        </div>
+            <div className={css['axis-toggles']}>
+              {(['x', 'y', 'z'] as const).map(axis => (
+                <button
+                  key={axis}
+                  className={css['axis-toggle']}
+                  data-axis={axis}
+                  data-active={selectedAxes.has(axis)}
+                  onClick={() => toggleAxis(axis)}
+                >
+                  {axis.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
 
-        <Button
-          text="Fechar"
-          action={() => {
-            setEditingInteractorIsActive(false);
-            if (type === 'reposition') editingArrowsRef.current?.remove();
-            if (editingArrowsRef.current?.highlightArrow) {
-              editingArrowsRef.current.highlightArrow(null);
-            }
-          }}
-          type="button"
-          color="red"
-          className={css['coordinate-system__legend-button']}
-        />
+        {type === 'reposition' && (
+          <>
+            <div className={css['values-display']}>
+              {(['x', 'y', 'z'] as const).map(axis => (
+                <span key={axis} className={css['value-item']} data-axis={axis}>
+                  {axis.toUpperCase()}: {getDisplacementLabel(axis)}
+                </span>
+              ))}
+            </div>
+            <div className={css['direction-grid']}>
+              {(['x', 'y', 'z'] as const).map(axis => (
+                <div key={axis} className={css['direction-pair']}>
+                  {(['pos', 'neg'] as const).map(sign => {
+                    const key = `${axis}_${sign}`;
+                    return (
+                      <button
+                        key={key}
+                        className={css['direction-btn']}
+                        data-axis={axis}
+                        data-active={selectedDirections.has(key)}
+                        onClick={() => toggleDirection(key)}
+                      >
+                        {axis}{sign === 'pos' ? '+' : '−'}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {(type === 'scale' || type === 'reposition') && (
+          <div className={css['range-controls-section']}>
+            <RangeInput
+              sizeRef={sensitivityRef as React.MutableRefObject<number>}
+              min={0.1}
+              max={5}
+              label="Passo"
+              onValueChange={v => { sensitivityRef.current = v; setSensitivity(v); }}
+              thumbIcon={type === 'scale' ? '/images/icons/aspect_ratio.svg' : '/images/icons/straighten.svg'}
+            />
+          </div>
+        )}
+
+        {(type === 'scale' || type === 'reposition') && (
+          <div className={css['step-buttons']}>
+            <Button
+              text="−"
+              action={() => applyStep(-1)}
+              type="button"
+              color="orange"
+            />
+            <Button
+              text="+"
+              action={() => applyStep(1)}
+              type="button"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

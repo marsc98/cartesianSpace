@@ -1,153 +1,157 @@
 @use "../../../utils/styles/vars" as *;
 
-// Variáveis
-$primary-color: #1f2937;
-$secondary-color: #6b7280;
-$background-color: #f9fafb;
-$card-background: #ffffff;
-$border-color: #d1d5db;
 $positive-color: #dc2626;
 $negative-color: #0066cc;
-$shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-
-// Mixins
-@mixin flex-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
 
 @mixin card-style {
-  border-radius: 0.5rem;
-  box-shadow: $shadow;
-
   box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
 }
 
-// Componente principal
+// Componente principal — sem posicionamento absoluto (gerenciado pelo modal)
 .coordinate-system {
-  position: absolute;
-  z-index: 1000000000;
-
-  padding: .8rem;
-
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 1rem;
-
   cursor: crosshair;
-
-  @include flex-center;
-
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  border: 1px solid #374151;
-  border-radius: 1rem;
-
-  background-color: $sky-gray;
-
-  .move {
-    &:hover {
-      opacity: 1;
-    }
-  }
+  width: 100%;
 
   &__canvas-container {
     @include card-style;
+    border-radius: 1rem;
+    padding: 2px;
+    overflow: visible;
   }
 
   &__canvas {
     border: 1px solid #354051f8;
-    border-radius: 1rem;
+    border-radius: calc(1rem - 2px);
     display: block;
   }
-
-  &__legend {
-    font-size: 0.875rem;
-    color: $secondary-color;
-    text-align: center;
-
-    &-item {
-      margin: 0.25rem 0;
-      position: relative;
-      padding-left: 1rem;
-
-      &::before {
-        content: '■';
-        position: absolute;
-        left: 0;
-        font-size: 1rem;
-      }
-
-      &--positive::before {
-        color: $positive-color;
-      }
-
-      &--negative::before {
-        color: $negative-color;
-      }
-    }
-  }
 }
 
-// Responsividade
-@media (max-width: 768px) {
-  .coordinate-system {
-    padding: 1rem;
-
-    &__title {
-      font-size: 1.25rem;
-    }
-
-    &__canvas {
-      max-width: 100%;
-      height: auto;
-    }
-
-    &__legend {
-      font-size: 0.75rem;
-      max-width: 20rem;
-    }
-  }
-}
+// ─── Bottom container ─────────────────────────────────────────────────────────
 
 .bottom-container {
   width: 100%;
-  display: grid;
-  grid-template-columns: auto 5rem;
-}
-
-.range-controls-section {
-  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+
+  .range-controls-section {
+    margin: 12px 0;
+  }
 }
+
+.step-buttons {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+// ─── Values display ───────────────────────────────────────────────────────────
+
+.values-display {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.value-item {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.04em;
+  color: #888;
+
+  &[data-axis="x"] { color: #ff8888; }
+  &[data-axis="y"] { color: #88ffaa; }
+  &[data-axis="z"] { color: #88aaff; }
+}
+
+// ─── Axis toggles (scale mode) ────────────────────────────────────────────────
 
 .axis-toggles {
   display: flex;
   gap: 8px;
   justify-content: center;
-  align-items: center;
 }
 
-.axis-group {
+.axis-toggle {
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #666;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+  &[data-axis="x"][data-active="true"] {
+    background: rgba(204, 51, 51, 0.35);
+    border-color: #cc3333;
+    color: #ffaaaa;
+  }
+
+  &[data-axis="y"][data-active="true"] {
+    background: rgba(51, 160, 80, 0.35);
+    border-color: #33a050;
+    color: #aaffcc;
+  }
+
+  &[data-axis="z"][data-active="true"] {
+    background: rgba(51, 100, 200, 0.35);
+    border-color: #3364c8;
+    color: #aaccff;
+  }
+}
+
+// ─── Direction toggles (reposition mode) ─────────────────────────────────────
+
+.direction-grid {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.direction-pair {
   display: flex;
   gap: 4px;
 }
 
-.axis-toggle {
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: transparent;
-  color: #a4a4a4;
+.direction-btn {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #555;
   cursor: pointer;
   font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 
-  &--active {
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
-    border-color: rgba(255, 255, 255, 0.6);
+  &[data-axis="x"][data-active="true"] {
+    background: rgba(204, 51, 51, 0.35);
+    border-color: #cc3333;
+    color: #ffaaaa;
+  }
+
+  &[data-axis="y"][data-active="true"] {
+    background: rgba(51, 160, 80, 0.35);
+    border-color: #33a050;
+    color: #aaffcc;
+  }
+
+  &[data-axis="z"][data-active="true"] {
+    background: rgba(51, 100, 200, 0.35);
+    border-color: #3364c8;
+    color: #aaccff;
   }
 }

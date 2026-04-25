@@ -229,10 +229,6 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
     rotationRef.current.active = false;
   }, [rotationRef]);
 
-  const stopResize = useCallback(() => {
-    editingInteractorRef.current.active = false;
-  }, [editingInteractorRef]);
-
   const handleDraw = useCallback(() => {
     drawingRef.current = !drawingRef.current;
     setFunctionsOpen(false);
@@ -318,7 +314,6 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
     handleStopAll,
     handleElementsSelection,
     handleElementResize: scene.handleElementResize,
-    stopResize,
     handleMountains: modalHandlers.handleMountains,
     handleSavedScenes: modalHandlers.handleSavedScenes,
     updateSketch,
@@ -449,7 +444,6 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
         onSetCameraPosition={scene.setCameraPosition}
         editingInteractorIsActive={editingInteractorIsActive}
         setEditingInteractorIsActive={setEditingInteractorIsActive}
-        onStopResize={stopResize}
         activeTutorial={activeTutorial}
         onCloseTutorial={() => setActiveTutorial(null)}
       />

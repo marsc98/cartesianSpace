@@ -63,7 +63,6 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
     handleStopAll,
     handleElementsSelection,
     handleElementResize,
-    stopResize,
     handleMountains,
     handleSavedScenes,
     updateSketch,

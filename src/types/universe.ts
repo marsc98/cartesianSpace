@@ -27,7 +27,6 @@ export interface UniverseContext {
   handleStopAll: () => void;
   handleElementsSelection: () => void;
   handleElementResize: (scale: number) => void;
-  stopResize: () => void;
   handleMountains: () => void;
   handleSavedScenes: () => void;
   updateSketch: () => Promise<Sketch>;
