@@ -111,7 +111,7 @@ export function ToolsManager({
         setListOpen={setListOpen}
         list={actionHelpers}
         position={isMobile ? "brr" : "bcr"}
-        jump={isMobile ? "bottom-5" : "bottom-1"}
+        jump={isMobile ? "bottom-5" : "bottom-.3"}
       />
       <HelpersList
         key="sceneHelpers"
