@@ -156,10 +156,8 @@ function CreativityForm(props) {
   }
 
   useEffect(() => {
-    if (elementsRef.current.shape) {
-      setSelectedShape(elementsRef.current.shape);
-    } else {
-      setSelectedShape('square');
+    if (activeCreativityRef.current.id) {
+      setSelectedShape(activeCreativityRef.current.id);
     }
   }, []);
 

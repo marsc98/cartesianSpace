@@ -79,7 +79,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
     setLinePoints, awaitingSecondClick, setAwaitingSecondClick, linePoints,
     drawingRef, drawingStartedRef, colorRef, lineBetweenPointsRef, drawerRef,
     drawingElementRef, initialElementsCoordinatesRef, currentTraceSegmentsRef,
-    activeCreativityRef, sizeRef, drawDistanceRef, planesRef,
+    activeCreativityRef, sizeRef, drawDistanceRef,
   } = useDrawing();
 
   // Ref estável para linePoints — evita que handleBoardClick invalide a cada clique
@@ -347,6 +347,10 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
           searchingPointRef.current = false;
           setElementsIsActive(false);
           elementsRef.current.active = false;
+          elementsRef.current.shape = '';
+          elementsRef.current.plane = '';
+          elementsRef.current.type = '';
+          selectedTerrainRef.current = '';
           drawingRef.current = false;
           setIsDrawing(false);
           return;
@@ -1119,43 +1123,6 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
           );
         }
 
-        if (searchingPointRef.current) {
-          raycasterRef.current.setFromCamera(
-            mouseRef.current,
-            cameraRef.current,
-          );
-          const distance = drawDistanceRef.current;
-          const point = raycasterRef.current.ray.direction
-            .clone()
-            .multiplyScalar(distance)
-            .add(cameraRef.current.position);
-
-          if (planesRef.current) {
-            initialElementsCoordinatesRef.current = {
-              x: touch.clientX,
-              y: touch.clientY,
-            };
-            handleCreativityOnSpace(
-              {
-                element: 'plane',
-                plane: selectedTerrainRef.current,
-                position: point,
-                origin: { x: point.x, y: point.y, z: point.z },
-                color: colorRef.current,
-                size: sizeRef.current,
-              },
-              sceneRef,
-              elementsStackRef,
-              cartesianSpaceRef,
-              addElement,
-              false,
-              pushHistory,
-            );
-            searchingPointRef.current = false;
-            planesRef.current = false;
-          }
-        }
-
         const now = new Date().getTime();
         const isDoubleClick = now - controls.lastClickTime < 300;
 
@@ -1232,58 +1199,6 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
         editingInteractorRef.current.type = '';
         waitingForFirstInteractionRef.current = false;
         notify?.('universeNavigator', 'neutral');
-      }
-
-      if (
-        searchingPointRef.current &&
-        !writingRef.current &&
-        !searchingFacesRef.current &&
-        !planesRef?.current
-      ) {
-        raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
-        const distance = drawDistanceRef.current;
-        const point = raycasterRef.current.ray.direction
-          .clone()
-          .multiplyScalar(distance)
-          .add(cameraRef.current.position);
-      }
-
-      if (
-        searchingPointRef.current &&
-        !functionRef.current &&
-        planesRef.current
-      ) {
-        const lastTouch = e.changedTouches[0];
-        initialElementsCoordinatesRef.current = {
-          x: lastTouch.clientX,
-          y: lastTouch.clientY,
-        };
-        raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
-        const distance = drawDistanceRef.current;
-        const point = raycasterRef.current.ray.direction
-          .clone()
-          .multiplyScalar(distance)
-          .add(cameraRef.current.position);
-
-        handleCreativityOnSpace(
-          {
-            element: 'plane',
-            plane: selectedTerrainRef.current,
-            position: point,
-            origin: { x: point.x, y: point.y, z: point.z },
-            color: colorRef.current,
-            size: sizeRef.current,
-          },
-          sceneRef,
-          elementsStackRef,
-          cartesianSpaceRef,
-          addElement,
-          false,
-          pushHistory,
-        );
-
-        searchingPointRef.current = false;
-        planesRef.current = false;
       }
 
       if (drawingRef.current && e.changedTouches.length > 0) {

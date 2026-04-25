@@ -217,6 +217,10 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
       formId: 'planes-form',
       buttonColor: 'blue',
       action: () => {
+        elementsRef.current.shape = 'plane';
+        elementsRef.current.type = 'shapes';
+        elementsRef.current.active = true;
+        setElementsIsActive(true);
         searchingPointRef.current = true;
         drawingRef.current = true;
         removeModal(id);
@@ -224,7 +228,7 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
       },
     });
   }, [addModal, removeModal, isMobile, selectedTerrainRef,
-    searchingPointRef, drawingRef, writingRef]);
+    searchingPointRef, drawingRef, writingRef, elementsRef, setElementsIsActive]);
 
   // ── Texto ─────────────────────────────────────────────────────────────────
 

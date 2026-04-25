@@ -2831,18 +2831,26 @@ export function drawBlackboard(sceneRef, elementData, config = {}) {
 }
 
 function handlePlaneSelection(sceneRef, elementData) {
+  let result;
   switch (elementData.plane) {
     case 'default':
-      return createSimplePlane(sceneRef.current, elementData.position);
+      result = createSimplePlane(sceneRef.current, elementData.position);
+      break;
     case 'tijolo':
-      return createBrickLikeTerrain(sceneRef.current, elementData.position);
+      result = createBrickLikeTerrain(sceneRef.current, elementData.position);
+      break;
     case 'gelo':
-      return createSnowTerrain(sceneRef.current, elementData.position);
+      result = createSnowTerrain(sceneRef.current, elementData.position);
+      break;
     case 'grama':
-      return createGrassTerrain(sceneRef.current, elementData.position);
+      result = createGrassTerrain(sceneRef.current, elementData.position);
+      break;
     case 'concreto':
-      return createConcreteTerrain(sceneRef.current, elementData.position);
+      result = createConcreteTerrain(sceneRef.current, elementData.position);
+      break;
     default:
       return;
   }
+  if (result) result.userData.particleId = elementData.id;
+  return result;
 }
