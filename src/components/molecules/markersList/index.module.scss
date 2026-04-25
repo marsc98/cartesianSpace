@@ -110,7 +110,6 @@
     }
 
     .marker-item_container {
-      min-width: 250px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -136,6 +135,7 @@
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
+        flex-shrink: 0;
       }
 
       .marker-text_container {
@@ -143,6 +143,9 @@
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
 
         font-size: 1.3rem;
         font-weight: 600;
@@ -152,9 +155,11 @@
         }
 
         .marker-item__name {
-          word-break: break-word;
+          width: 100%;
+          min-width: 0;
           overflow: hidden;
           text-overflow: ellipsis;
+          white-space: nowrap;
 
           font-size: 1rem;
           font-weight: 600;
@@ -171,6 +176,8 @@
           &:focus,
           &:active {
             border-bottom: 1px solid #9198a1;
+            white-space: normal;
+            overflow: visible;
           }
         }
 
@@ -194,8 +201,6 @@
     }
 
     .marker-item_container {
-      min-width: 200px;
-
       .marker-text_container {
         font-size: 1rem;
       }

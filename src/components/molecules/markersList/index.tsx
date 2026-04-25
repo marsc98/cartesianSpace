@@ -219,6 +219,8 @@ function MarkersList({
           isMobile={isMobile}
           isListMode={false}
           hasNoText={true}
+          customWidth="80px"
+          customHeight="65px"
         />
       );
     };
