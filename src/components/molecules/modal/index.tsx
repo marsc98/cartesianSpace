@@ -55,6 +55,7 @@ function Modal({ setIsOwnCursorActive, modalIsOpenRef, id, modalState, writingRe
   const isDraggingButton = useRef(false);
   const dragStartPos = useRef({ x: 0, y: 0 });
   const dragStartPosition = useRef({ top: 0, left: 0 });
+  const modalDimensions = useRef({ width: 0 });
   const hasInitialized = useRef(false);
 
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -66,6 +67,15 @@ function Modal({ setIsOwnCursorActive, modalIsOpenRef, id, modalState, writingRe
   const isFirstRender = useRef(true);
 
   const isMobile = useIsMobile();
+
+  const clampPosition = (
+    top: number,
+    left: number,
+    modalWidth: number,
+  ): { top: number; left: number } => ({
+    top: Math.max(0, top),
+    left: Math.min(left, window.innerWidth - modalWidth),
+  });
 
   const getCenterPosition = () => {
     if (modalRef.current) {
@@ -101,17 +111,11 @@ function Modal({ setIsOwnCursorActive, modalIsOpenRef, id, modalState, writingRe
       previousFocusRef.current = document.activeElement as HTMLElement;
 
       const savedPosition = loadSavedPosition();
-      if (savedPosition) {
-        const viewportHeight = window.innerHeight;
-        const viewportWidth = window.innerWidth;
-        const maxTop = Math.max(0, viewportHeight - 50);
-        const maxLeft = Math.max(0, viewportWidth - 50);
-        
-        let safeTop = Math.max(0, Math.min(savedPosition.top, maxTop));
-        let safeLeft = Math.max(0, Math.min(savedPosition.left, maxLeft));
-
-        // Avoid off-screen rendering if left is negative or greater than screen
-        setPosition({ top: safeTop, left: safeLeft });
+      if (savedPosition && modalRef.current) {
+        const rect = modalRef.current.getBoundingClientRect();
+        const clamped = clampPosition(savedPosition.top, savedPosition.left, rect.width);
+        setPosition(clamped);
+        savePosition(clamped);
       } else {
         setPosition(getCenterPosition());
       }
@@ -218,8 +222,8 @@ function Modal({ setIsOwnCursorActive, modalIsOpenRef, id, modalState, writingRe
     };
   }, [isOpen, isFixed]);
 
-  function handleClose() {
-    if (isFixed) return;
+  function handleClose(force = false) {
+    if (isFixed && !force) return;
 
     setIsClosing(true);
     setTimeout(() => {
@@ -251,6 +255,11 @@ function Modal({ setIsOwnCursorActive, modalIsOpenRef, id, modalState, writingRe
     dragStartPos.current = { x: e.clientX, y: e.clientY };
     dragStartPosition.current = { top: position.top, left: position.left };
 
+    if (modalRef.current) {
+      const rect = modalRef.current.getBoundingClientRect();
+      modalDimensions.current = { width: rect.width };
+    }
+
     document.addEventListener('mousemove', handleGlobalMouseMove);
     document.addEventListener('mouseup', handleGlobalMouseUp);
   };
@@ -264,8 +273,13 @@ function Modal({ setIsOwnCursorActive, modalIsOpenRef, id, modalState, writingRe
       const newTop = dragStartPosition.current.top + deltaY;
       const newLeft = dragStartPosition.current.left + deltaX;
 
-      modalRef.current.style.top = `${newTop}px`;
-      modalRef.current.style.left = `${newLeft}px`;
+      const { top: clampedTop, left: clampedLeft } = clampPosition(
+        newTop, newLeft,
+        modalDimensions.current.width,
+      );
+
+      modalRef.current.style.top = `${clampedTop}px`;
+      modalRef.current.style.left = `${clampedLeft}px`;
     }
   };
 
@@ -293,6 +307,11 @@ function Modal({ setIsOwnCursorActive, modalIsOpenRef, id, modalState, writingRe
       dragStartPos.current = { x: touch.clientX, y: touch.clientY };
       dragStartPosition.current = { top: position.top, left: position.left };
 
+      if (modalRef.current) {
+        const rect = modalRef.current.getBoundingClientRect();
+        modalDimensions.current = { width: rect.width };
+      }
+
       document.addEventListener('touchmove', handleGlobalTouchMove, { passive: false });
       document.addEventListener('touchend', handleGlobalTouchEnd);
     }
@@ -308,8 +327,13 @@ function Modal({ setIsOwnCursorActive, modalIsOpenRef, id, modalState, writingRe
       const newTop = dragStartPosition.current.top + deltaY;
       const newLeft = dragStartPosition.current.left + deltaX;
 
-      modalRef.current.style.top = `${newTop}px`;
-      modalRef.current.style.left = `${newLeft}px`;
+      const { top: clampedTop, left: clampedLeft } = clampPosition(
+        newTop, newLeft,
+        modalDimensions.current.width,
+      );
+
+      modalRef.current.style.top = `${clampedTop}px`;
+      modalRef.current.style.left = `${clampedLeft}px`;
     }
   };
 
@@ -343,6 +367,24 @@ function Modal({ setIsOwnCursorActive, modalIsOpenRef, id, modalState, writingRe
   useEffect(() => {
     setIsFixed(fixed ?? false);
   }, [fixed]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleResize = () => {
+      if (!modalRef.current) return;
+      const rect = modalRef.current.getBoundingClientRect();
+      setPosition(prev => {
+        const clamped = clampPosition(prev.top, prev.left, rect.width);
+        if (clamped.top === prev.top && clamped.left === prev.left) return prev;
+        savePosition(clamped);
+        return clamped;
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -457,7 +499,7 @@ function Modal({ setIsOwnCursorActive, modalIsOpenRef, id, modalState, writingRe
 
         <Button
           text="Fechar"
-          action={() => handleClose()}
+          action={() => handleClose(true)}
           type="button"
           color="red"
         />
