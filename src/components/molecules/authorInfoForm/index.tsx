@@ -111,7 +111,7 @@ export const MeuForm = ({ isMobile = false }) => {
                 funções matemáticas, eixos de referência, terrenos, textos e
                 imagens, com navegação similar a ambientes virtuais em primeira
                 pessoa. O dispositivo de controle consiste em um sensor MPU6050
-                e uma ESP32 C3 super mini, que capturam o ân- gulo de
+                e uma ESP32 C3 super mini, que capturam o ângulo de
                 deslocamento e a direção do movimento para controlar o cursor
                 via Bluetooth Low Energy (BLE).
               </p>
@@ -119,7 +119,7 @@ export const MeuForm = ({ isMobile = false }) => {
                 O sistema fundamenta-se em princípios de computação gráfica,
                 incluindo transformações matriciais, pipeline de renderização
                 WebGL, algoritmos de raycasting para detecção de intersecções, e
-                processamento de expressões matemáti- cas através da biblioteca
+                processamento de expressões matemáticas através da biblioteca
                 Math.js. A solução proposta visa proporcionar uma ferramenta
                 interativa que aproxime estudantes dos conceitos matemáticos
                 fundamentais através de visualização tridimensional e exploração
@@ -149,7 +149,7 @@ export const MeuForm = ({ isMobile = false }) => {
               rel="noopener noreferrer"
               style={{
                 padding: '12px',
-                backgroundColor: '#1f2937',
+                backgroundColor: '#3b4047',
                 borderRadius: '8px',
                 boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                 color: 'white',
@@ -213,104 +213,13 @@ export const MeuForm = ({ isMobile = false }) => {
               </p>
               <p>
                 {isMobile ? 'Abaixo' : 'Ao lado'} está o resumo da monografia
-                para trazer uma ideia do que foi pretendido e aqui em baixo está
-                um botão que te leva para um formulário para me ajudar na
-                conclusão da monografia e também deixar sugestões, críticas,
-                ideias... e se quiser entrar em contato seguem minhas redes ali
+                para trazer uma ideia do que foi pretendido e se quiser entrar em contato seguem minhas redes ali
                 no início do modal!!
               </p>
             </div>
           </div>
-
-          {/* Baixo - Botão com Animação */}
-          <div
-            style={{
-              justifyContent: 'center',
-            }}
-          >
-            <Button
-              href={import.meta.env.VITE_FORM_URL}
-              text="Formulário :)"
-              onClick={handleButtonClick}
-            />
-
-            {/* Animação "valeu demais" */}
-            {isAnimating && (
-              <div
-                style={{
-                  inset: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  pointerEvents: 'none',
-                  overflow: 'visible',
-                }}
-              >
-                <div style={{ position: 'relative' }}>
-                  <span
-                    style={{
-                      position: 'absolute',
-                      whiteSpace: 'nowrap',
-                      fontSize: '24px',
-                      fontWeight: 'bold',
-                      color: '#2563eb',
-                      animation: 'expandLeft 2s ease-out forwards',
-                      transformOrigin: 'right center',
-                      right: '5px',
-                    }}
-                  >
-                    valeu
-                  </span>
-                  <span
-                    style={{
-                      position: 'absolute',
-                      whiteSpace: 'nowrap',
-                      fontSize: '24px',
-                      fontWeight: 'bold',
-                      color: '#2563eb',
-                      animation: 'expandRight 2s ease-out forwards',
-                      transformOrigin: 'left center',
-                      left: '5px',
-                    }}
-                  >
-                    demais
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes expandLeft {
-          0% {
-            transform: translateX(0) scale(0);
-            opacity: 0;
-          }
-          50% {
-            opacity: 1;
-          }
-          100% {
-            transform: translateX(-80px) scale(1);
-            opacity: 1;
-          }
-        }
-
-        @keyframes expandRight {
-          0% {
-            transform: translateX(0) scale(0);
-            opacity: 0;
-          }
-          50% {
-            opacity: 1;
-          }
-          100% {
-            transform: translateX(80px) scale(1);
-            opacity: 1;
-          }
-        }
-      `}</style>
     </div>
   );
 };
