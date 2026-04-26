@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from 'fs';
 
 const wasmPath = 'public/wasm/trace_opt.wasm';
 
-let wasm: Buffer;
+let wasm;
 try {
   wasm = readFileSync(wasmPath);
 } catch {
@@ -13,7 +13,7 @@ try {
 
 const hash = createHash('sha384').update(wasm).digest('base64');
 
-const content = `// Auto-gerado por scripts/generate-wasm-hash.ts — não editar manualmente
+const content = `// Auto-gerado por scripts/generate-wasm-hash.js — não editar manualmente
 export const WASM_INTEGRITY_HASH = 'sha384-${hash}';
 `;
 

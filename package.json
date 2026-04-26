@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "vite",
-    "build": "node --experimental-strip-types scripts/generate-wasm-hash.ts && vite build",
+    "build": "node scripts/generate-wasm-hash.js && vite build",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
