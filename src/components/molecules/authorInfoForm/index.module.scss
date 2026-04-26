@@ -1,0 +1,163 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  max-width: 1152px;
+  border-radius: 12px;
+  box-shadow:
+    0 15px 15px -10px rgba(0, 0, 0, 0.3),
+    0 -15px 15px -10px rgba(0, 0, 0, 0.3),
+    -15px 0 15px -10px rgba(0, 0, 0, 0.3),
+    15px 0 15px -10px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  height: 500px;
+  border: 1px solid #475e73;
+
+  &.mobile {
+    overflow: auto;
+    flex-direction: column;
+    height: 600px;
+  }
+}
+
+.leftColumn {
+  max-width: 600px;
+  padding: 25px;
+  box-sizing: border-box;
+  border-right: 4px solid #475e73;
+  height: 100%;
+  order: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &.mobile {
+    height: auto;
+    overflow: visible;
+    order: 2;
+  }
+}
+
+.leftColumnHeader {
+  flex-shrink: 0;
+}
+
+.abstractWrapper {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.heading {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.abstractText {
+  color: #374151;
+  line-height: 1.75;
+  text-align: justify;
+  padding-top: 8px;
+  font-size: 0.9rem;
+
+  &.mobile {
+    font-size: 0.8rem;
+  }
+}
+
+.paragraph {
+  margin-bottom: 12px;
+}
+
+.rightColumn {
+  padding: 32px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  order: 2;
+
+  &.mobile {
+    height: auto;
+    order: 1;
+  }
+}
+
+.socialLinks {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.socialLink {
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  text-decoration: none;
+}
+
+.githubLink {
+  background-color: #3b4047;
+
+  &:hover {
+    background-color: #374151;
+  }
+}
+
+.linkedinLink {
+  background-color: #2563eb;
+
+  &:hover {
+    background-color: #1d4ed8;
+  }
+}
+
+.content {
+  flex: 1;
+  margin-bottom: 24px;
+  overflow-y: auto;
+}
+
+.contentText {
+  color: #374151;
+  line-height: 1.75;
+  text-align: justify;
+}
+
+.contentParagraph {
+  margin-bottom: 16px;
+}
+
+.fadeGradient {
+  position: sticky;
+  bottom: 0;
+  height: 56px;
+  margin-top: -56px;
+  background: linear-gradient(to bottom, transparent, #1f2937);
+  pointer-events: none;
+}
+
+.footer {
+  font-size: 0.7rem;
+  color: #6b7280;
+  margin-bottom: 16px;
+}
+
+.footerLink {
+  color: #6b7280;
+}
