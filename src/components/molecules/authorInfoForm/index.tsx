@@ -107,7 +107,7 @@ export const MeuForm = ({ isMobile = false }) => {
           </div>
 
           <p className={styles.footer}>
-            © 2025 Marco Santos da Silva ·{' '}
+            © 2025 Marco Antônio Santos da Silva ·{' '}
             <a
               href="https://polyformproject.org/licenses/noncommercial/1.0.0"
               target="_blank"
