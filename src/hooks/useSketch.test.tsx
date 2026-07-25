@@ -200,6 +200,141 @@ describe('useSketch', () => {
     })
   })
 
+  // ─── groupElements / ungroupAll / ungroupSingle / getGroupMembers ─────────
+
+  describe('groupElements', () => {
+    it('retorna um ElementGroup com os memberIds fornecidos', async () => {
+      const { result } = renderSketch()
+      await waitForReady(result)
+
+      act(() => {
+        result.current.queueElement({ id: 'el-g1' } as any)
+        result.current.queueElement({ id: 'el-g2' } as any)
+        result.current.flushQueue()
+      })
+      await waitFor(() => expect(result.current.elements.some((e) => e.id === 'el-g1')).toBe(true))
+
+      let group: any
+      act(() => {
+        group = result.current.groupElements(['el-g1', 'el-g2'])
+      })
+
+      expect(group).toBeDefined()
+      expect(group.id).toBeTruthy()
+      expect(group.memberIds).toEqual(['el-g1', 'el-g2'])
+    })
+
+    it('elementos agrupados recebem groupId no state', async () => {
+      const { result } = renderSketch()
+      await waitForReady(result)
+
+      act(() => {
+        result.current.queueElement({ id: 'el-h1' } as any)
+        result.current.queueElement({ id: 'el-h2' } as any)
+        result.current.flushQueue()
+      })
+      await waitFor(() => expect(result.current.elements.some((e) => e.id === 'el-h1')).toBe(true))
+
+      let group: any
+      act(() => {
+        group = result.current.groupElements(['el-h1', 'el-h2'])
+      })
+
+      await waitFor(() => {
+        const el = result.current.elements.find((e) => e.id === 'el-h1')
+        expect((el as any)?.groupId).toBe(group.id)
+      })
+    })
+  })
+
+  describe('getGroupMembers', () => {
+    it('retorna os elementos que pertencem ao grupo', async () => {
+      const { result } = renderSketch()
+      await waitForReady(result)
+
+      act(() => {
+        result.current.queueElement({ id: 'el-m1' } as any)
+        result.current.queueElement({ id: 'el-m2' } as any)
+        result.current.flushQueue()
+      })
+      await waitFor(() => expect(result.current.elements.some((e) => e.id === 'el-m1')).toBe(true))
+
+      let group: any
+      act(() => {
+        group = result.current.groupElements(['el-m1', 'el-m2'])
+      })
+      await waitFor(() => {
+        const el = result.current.elements.find((e) => e.id === 'el-m1')
+        expect((el as any)?.groupId).toBe(group.id)
+      })
+
+      const members = result.current.getGroupMembers(group.id)
+      expect(members.map((m) => m.id).sort()).toEqual(['el-m1', 'el-m2'].sort())
+    })
+  })
+
+  describe('ungroupAll', () => {
+    it('remove groupId de todos os membros', async () => {
+      const { result } = renderSketch()
+      await waitForReady(result)
+
+      act(() => {
+        result.current.queueElement({ id: 'el-u1' } as any)
+        result.current.queueElement({ id: 'el-u2' } as any)
+        result.current.flushQueue()
+      })
+      await waitFor(() => expect(result.current.elements.some((e) => e.id === 'el-u1')).toBe(true))
+
+      let group: any
+      act(() => {
+        group = result.current.groupElements(['el-u1', 'el-u2'])
+      })
+      await waitFor(() => {
+        expect((result.current.elements.find((e) => e.id === 'el-u1') as any)?.groupId).toBe(group.id)
+      })
+
+      act(() => {
+        result.current.ungroupAll(group.id)
+      })
+      await waitFor(() => {
+        const el = result.current.elements.find((e) => e.id === 'el-u1')
+        expect((el as any)?.groupId).toBeUndefined()
+      })
+    })
+  })
+
+  describe('ungroupSingle', () => {
+    it('remove groupId somente do elemento indicado', async () => {
+      const { result } = renderSketch()
+      await waitForReady(result)
+
+      act(() => {
+        result.current.queueElement({ id: 'el-s1' } as any)
+        result.current.queueElement({ id: 'el-s2' } as any)
+        result.current.flushQueue()
+      })
+      await waitFor(() => expect(result.current.elements.some((e) => e.id === 'el-s1')).toBe(true))
+
+      let group: any
+      act(() => {
+        group = result.current.groupElements(['el-s1', 'el-s2'])
+      })
+      await waitFor(() => {
+        expect((result.current.elements.find((e) => e.id === 'el-s1') as any)?.groupId).toBe(group.id)
+      })
+
+      act(() => {
+        result.current.ungroupSingle('el-s1')
+      })
+      await waitFor(() => {
+        const el1 = result.current.elements.find((e) => e.id === 'el-s1')
+        const el2 = result.current.elements.find((e) => e.id === 'el-s2')
+        expect((el1 as any)?.groupId).toBeUndefined()
+        expect((el2 as any)?.groupId).toBe(group.id)
+      })
+    })
+  })
+
   // ─── queueElement / flushQueue ────────────────────────────────────────────
 
   describe('queueElement e flushQueue', () => {

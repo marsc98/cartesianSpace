@@ -11,6 +11,7 @@ import { useScene } from './contexts/SceneContext';
 import { useFunctions } from './contexts/FunctionsContext';
 import { reconstructElements } from '../components/organisms/Board3d/spaceElements';
 import type { AnyElement, Sketch, SketchSummary } from '../types';
+import type { ElementGroup } from '../types/sketch';
 
 // 1. Inicialização do IndexedDB
 let _dbPromise: Promise<IDBDatabase> | null = null;
@@ -143,6 +144,11 @@ export interface SketchContextType {
   createNewSketch: (name?: string) => Promise<Sketch>;
   getLatestSketch: () => Promise<Sketch | null>;
   updateMultipleElements: (updates: Partial<AnyElement>[]) => void;
+  groupElements: (memberIds: string[]) => ElementGroup;
+  ungroupAll: (groupId: string) => void;
+  ungroupSingle: (elementId: string) => void;
+  getGroupMembers: (groupId: string) => AnyElement[];
+  updateGroupsOnly: (groups: ElementGroup[]) => void;
 }
 
 const SketchContext = createContext<SketchContextType | null>(null);
@@ -391,6 +397,74 @@ const SketchProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
+  const groupElements = useCallback((memberIds: string[]): ElementGroup => {
+    const groupId = Math.random().toString(36).substr(2, 9);
+    const group: ElementGroup = { id: groupId, memberIds };
+
+    const updatedElements = elementsRef.current.map((el) =>
+      memberIds.includes(el.id) ? { ...el, groupId } : el,
+    );
+    setElements(updatedElements);
+
+    const currentGroups = (currentSketchRef.current as any)?.groups ?? [];
+    const newGroups = [...currentGroups, group];
+
+    if (currentSketchRef.current) {
+      const updatedSketch = {
+        ...currentSketchRef.current,
+        data: updatedElements,
+        groups: newGroups,
+        updatedAt: new Date().toISOString(),
+      };
+      dbOperations.updateSketch(updatedSketch);
+      setCurrentSketch(updatedSketch as any);
+    }
+
+    return group;
+  }, []);
+
+  const ungroupAll = useCallback((groupId: string): void => {
+    const updatedElements = elementsRef.current.map((el) =>
+      (el as any).groupId === groupId ? { ...el, groupId: undefined } : el,
+    );
+    setElements(updatedElements);
+
+    const currentGroups = (currentSketchRef.current as any)?.groups ?? [];
+    const newGroups = currentGroups.filter((g: ElementGroup) => g.id !== groupId);
+
+    if (currentSketchRef.current) {
+      const updatedSketch = {
+        ...currentSketchRef.current,
+        data: updatedElements,
+        groups: newGroups,
+        updatedAt: new Date().toISOString(),
+      };
+      dbOperations.updateSketch(updatedSketch);
+      setCurrentSketch(updatedSketch as any);
+    }
+  }, []);
+
+  const ungroupSingle = useCallback((elementId: string): void => {
+    setElements((prev) =>
+      prev.map((el) => (el.id === elementId ? { ...el, groupId: undefined } : el)),
+    );
+  }, []);
+
+  const getGroupMembers = useCallback((groupId: string): AnyElement[] => {
+    return elementsRef.current.filter((el) => (el as any).groupId === groupId);
+  }, []);
+
+  const updateGroupsOnly = useCallback((groups: ElementGroup[]): void => {
+    if (!currentSketchRef.current) return;
+    const updatedSketch = {
+      ...currentSketchRef.current,
+      groups,
+      updatedAt: new Date().toISOString(),
+    };
+    dbOperations.updateSketch(updatedSketch);
+    setCurrentSketch(updatedSketch as any);
+  }, []);
+
   // Criar nova sketch limpa
   const createNewSketch = useCallback(
     async (name) => {
@@ -419,6 +493,11 @@ const SketchProvider = ({ children }: { children: React.ReactNode }) => {
     createNewSketch,
     getLatestSketch,
     updateMultipleElements,
+    groupElements,
+    ungroupAll,
+    ungroupSingle,
+    getGroupMembers,
+    updateGroupsOnly,
   }), [
     elements,
     currentSketch,
@@ -437,6 +516,11 @@ const SketchProvider = ({ children }: { children: React.ReactNode }) => {
     createNewSketch,
     getLatestSketch,
     updateMultipleElements,
+    groupElements,
+    ungroupAll,
+    ungroupSingle,
+    getGroupMembers,
+    updateGroupsOnly,
   ]);
 
   return (

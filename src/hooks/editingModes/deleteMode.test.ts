@@ -73,4 +73,39 @@ describe('deleteMode', () => {
     expect(ctx.editingInteractorRef.current.active).toBe(activeBefore)
     expect(ctx.deleteElement).not.toHaveBeenCalled()
   })
+
+  describe('multi-elemento via temporarySelectionIds', () => {
+    const makeMultiCtx = () => makeCtx({
+      temporarySelectionIds: ['a', 'b', 'c'],
+      lastIntersected: { current: { userData: { particleId: 'a', groupId: 'grp-1' } } } as any,
+      sceneRef: { current: { children: [] } } as any,
+      elementsStackRef: { current: new Map() } as any,
+    } as any)
+
+    it('chama addModal com título referenciando a quantidade de elementos', () => {
+      const ctx = makeMultiCtx()
+      deleteMode.enter(ctx)
+      const [modalConfig] = (ctx.addModal as ReturnType<typeof vi.fn>).mock.calls[0]
+      expect(modalConfig.title).toMatch(/3/)
+    })
+
+    it('ação do modal chama pushHistory com REMOVE_GROUP', () => {
+      const pushHistory = vi.fn()
+      const ctx = { ...makeMultiCtx(), pushHistory } as any
+      deleteMode.enter(ctx)
+      const [modalConfig] = (ctx.addModal as ReturnType<typeof vi.fn>).mock.calls[0]
+      modalConfig.action()
+      expect(pushHistory).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'REMOVE_GROUP' }),
+      )
+    })
+
+    it('ação do modal chama removeModal', () => {
+      const ctx = makeMultiCtx()
+      deleteMode.enter(ctx)
+      const [modalConfig] = (ctx.addModal as ReturnType<typeof vi.fn>).mock.calls[0]
+      modalConfig.action()
+      expect(ctx.removeModal).toHaveBeenCalledOnce()
+    })
+  })
 })

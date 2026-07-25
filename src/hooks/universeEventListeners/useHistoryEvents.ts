@@ -18,6 +18,10 @@ export const useHistoryEvents = ({
   handleCreativityOnSpace,
   needsRenderRef,
   setEditingInteractorIsActive,
+  updateMultipleElements,
+  updateElementById,
+  updateGroupsOnly,
+  sketchGroupsRef,
 }: any) => {
   const MAX_HISTORY = 7;
 
@@ -89,22 +93,32 @@ export const useHistoryEvents = ({
   const undo = useCallback(() => {
     const { past, future } = historyRef.current;
 
-
     if (past.length === 0) return;
 
     const command = past.pop();
-    const { id, type } = command.element;
 
-
-    if (command.type === 'ADD_ELEMENT') {
-      disposeMultipleObjects(sceneRef, elementsStackRef, id);
-      deleteElementsById(id);
-    } else if (command.type === 'REMOVE_ELEMENT') {
-      if (type === 'traces') {
-        replayTrace(command);
-      } else {
+    if (command.type === 'GROUP_ELEMENTS') {
+      // Undo: restore elements to pre-group snapshot (no groupId), remove group
+      updateMultipleElements?.(command.snapshot);
+      const currentGroups = sketchGroupsRef?.current ?? [];
+      updateGroupsOnly?.(currentGroups.filter((g: any) => g.id !== command.group.id));
+    } else if (command.type === 'UNGROUP_ALL') {
+      // Undo: re-apply groupId to all members, re-add group
+      const memberUpdates = command.group.memberIds.map((id: string) => ({
+        id,
+        groupId: command.group.id,
+      }));
+      updateMultipleElements?.(memberUpdates);
+      const currentGroups = sketchGroupsRef?.current ?? [];
+      updateGroupsOnly?.([...currentGroups, command.group]);
+    } else if (command.type === 'UNGROUP_SINGLE') {
+      // Undo: re-apply groupId to this element
+      updateElementById?.(command.elementId, { groupId: command.groupId });
+    } else if (command.type === 'REMOVE_GROUP') {
+      // Undo: restore all elements to scene and IndexedDB
+      command.elements.forEach((el: any) => {
         handleCreativityOnSpace(
-          command.element,
+          el,
           sceneRef,
           elementsStackRef,
           cartesianSpaceRef,
@@ -112,10 +126,34 @@ export const useHistoryEvents = ({
           true,
           null,
         );
-        addElement(command.element);
+        addElement(el);
+      });
+      if (command.group) {
+        const currentGroups = sketchGroupsRef?.current ?? [];
+        updateGroupsOnly?.([...currentGroups, command.group]);
+      }
+    } else {
+      const { id, type } = command.element;
+      if (command.type === 'ADD_ELEMENT') {
+        disposeMultipleObjects(sceneRef, elementsStackRef, id);
+        deleteElementsById(id);
+      } else if (command.type === 'REMOVE_ELEMENT') {
+        if (type === 'traces') {
+          replayTrace(command);
+        } else {
+          handleCreativityOnSpace(
+            command.element,
+            sceneRef,
+            elementsStackRef,
+            cartesianSpaceRef,
+            addElement,
+            true,
+            null,
+          );
+          addElement(command.element);
+        }
       }
     }
-
 
     future.push(command);
     setEditingInteractorIsActive?.(false);
@@ -133,34 +171,66 @@ export const useHistoryEvents = ({
     handleCreativityOnSpace,
     needsRenderRef,
     setEditingInteractorIsActive,
+    updateMultipleElements,
+    updateElementById,
+    updateGroupsOnly,
+    sketchGroupsRef,
   ]);
 
   const redo = useCallback(() => {
-    
     const { past, future } = historyRef.current;
     if (future.length === 0) return;
 
     const command = future.pop();
-    const { id, type } = command.element;
 
-    if (command.type === 'ADD_ELEMENT') {
-      if (type === 'traces') {
-        replayTrace(command);
-      } else {
-        handleCreativityOnSpace(
-          command.element,
-          sceneRef,
-          elementsStackRef,
-          cartesianSpaceRef,
-          addElement,
-          true,
-          null,
-        );
-        addElement(command.element);
+    if (command.type === 'GROUP_ELEMENTS') {
+      // Redo: re-apply groupId to all members, re-add group
+      const memberUpdates = command.group.memberIds.map((id: string) => ({
+        id,
+        groupId: command.group.id,
+      }));
+      updateMultipleElements?.(memberUpdates);
+      const currentGroups = sketchGroupsRef?.current ?? [];
+      updateGroupsOnly?.([...currentGroups, command.group]);
+    } else if (command.type === 'UNGROUP_ALL') {
+      // Redo: remove groupId from all members, remove group
+      updateMultipleElements?.(command.snapshot);
+      const currentGroups = sketchGroupsRef?.current ?? [];
+      updateGroupsOnly?.(currentGroups.filter((g: any) => g.id !== command.group.id));
+    } else if (command.type === 'UNGROUP_SINGLE') {
+      // Redo: remove groupId from this element
+      updateElementById?.(command.elementId, { groupId: undefined });
+    } else if (command.type === 'REMOVE_GROUP') {
+      // Redo: delete all elements from scene and IndexedDB
+      command.elements.forEach((el: any) => {
+        disposeMultipleObjects(sceneRef, elementsStackRef, el.id);
+      });
+      deleteElementsById(command.elements.map((el: any) => el.id));
+      if (command.group) {
+        const currentGroups = sketchGroupsRef?.current ?? [];
+        updateGroupsOnly?.(currentGroups.filter((g: any) => g.id !== command.group.id));
       }
-    } else if (command.type === 'REMOVE_ELEMENT') {
-      disposeMultipleObjects(sceneRef, elementsStackRef, id);
-      deleteElementsById(id);
+    } else {
+      const { id, type } = command.element;
+      if (command.type === 'ADD_ELEMENT') {
+        if (type === 'traces') {
+          replayTrace(command);
+        } else {
+          handleCreativityOnSpace(
+            command.element,
+            sceneRef,
+            elementsStackRef,
+            cartesianSpaceRef,
+            addElement,
+            true,
+            null,
+          );
+          addElement(command.element);
+        }
+      } else if (command.type === 'REMOVE_ELEMENT') {
+        disposeMultipleObjects(sceneRef, elementsStackRef, id);
+        deleteElementsById(id);
+      }
     }
 
     past.push(command);
@@ -177,6 +247,10 @@ export const useHistoryEvents = ({
     setHistorySize,
     handleCreativityOnSpace,
     needsRenderRef,
+    updateMultipleElements,
+    updateElementById,
+    updateGroupsOnly,
+    sketchGroupsRef,
   ]);
 
   return { pushHistory, deleteElement, replayTrace, undo, redo };

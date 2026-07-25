@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import CreativityForm from '../../molecules/creativityForm';
 import Calculator from '../../molecules/calculator';
 import CommandHelpers from '../../molecules/commandHelpers';
@@ -13,6 +13,8 @@ import SavedScenes from '../../molecules/savedScenes';
 import TextForm from '../../molecules/textForm';
 import { MeuForm } from '../../molecules/authorInfoForm';
 import { addImageToScene } from '../../organisms/Board3d/spaceElements';
+import GroupingForm from '../../molecules/groupingForm';
+import { useSketch } from '../../../hooks/useSketch';
 
 import { useDrawing } from '../../../hooks/contexts/DrawingContext';
 import { useElements } from '../../../hooks/contexts/ElementsContext';
@@ -31,6 +33,8 @@ export interface UseModalHandlersDeps {
   editingModeManager: EditingModeManagerReturn;
   /** Ref intermediária para deleteElement (evita dependência circular com useUniverseEventListeners) */
   deleteElementRef: React.MutableRefObject<() => void>;
+  /** Ref intermediária para pushHistory (evita dependência circular com useUniverseEventListeners) */
+  pushHistoryRef: React.MutableRefObject<(command: any) => void>;
   updateElementPosition: (x: number, y: number, ctrl: boolean) => void;
   setCameraPosition: (
     coords: { x: number; y: number; z: number },
@@ -66,7 +70,7 @@ export interface UseModalHandlersDeps {
  */
 export function useModalHandlers(deps: UseModalHandlersDeps) {
   const {
-    editingModeManager, deleteElementRef, updateElementPosition,
+    editingModeManager, deleteElementRef, pushHistoryRef, updateElementPosition,
     setCameraPosition, setActiveTutorial, setEditingInteractorIsActive,
     setElementsIsActive, setIsBlackBoardActive, setIsOwnCursorActive,
     setPencilIsActive, setFunctionsOpen,
@@ -82,7 +86,9 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
   const {
     elementsRef, editingInteractorRef, editingArrowsRef,
     isDraggingRef, waitingForFirstInteractionRef, lastIntersected, originalColor, selectedTerrainRef,
+    temporarySelectionIdsRef, pendingGroupIdsRef, isGroupingModeActiveRef,
   } = useElements() as any;
+  const { groupElements, ungroupAll, ungroupSingle, getGroupMembers, deleteElementsById } = useSketch();
   const { cartesianSpaceRef, functionsRef, functionRef, limitesRef, fontRef, textRef, axisRef } = useFunctions() as any;
   const { sceneRef, elementsStackRef, particleRef, mountRef } = useScene();
   const { cameraRef, rotationRef } = useCamera();
@@ -96,6 +102,10 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
   function handleCloseModal(_id?: string) { }
 
   // ── Info / Projeto ────────────────────────────────────────────────────────
+
+  // handleGrouping é referenciado por handleEditing (onGroup prop).
+  // Usamos uma ref estável para quebrar a dependência circular de ordem.
+  const handleGroupingRef = useRef<(initialElementId: string) => void>(() => { });
 
   // handleProjectInfo é referenciado por handleInfo, mas ambos são useCallback.
   // Usamos uma ref estável para quebrar a dependência circular de ordem.
@@ -416,9 +426,11 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
 
   // ── Edição de elementos ───────────────────────────────────────────────────
 
-  const handleEditing = useCallback(() => {
+  const handleEditing = useCallback((individualMode = false) => {
     // Limpa os modos de busca antes de abrir o painel de edição
     searchingPointRef.current = false;
+
+    const temporarySelectionIds = [...(temporarySelectionIdsRef?.current ?? [])];
 
     const id = `modal-editing-${Date.now()}`;
     addModal({
@@ -432,6 +444,7 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
             editingModeManager.activate(modeId, {
               lastIntersected,
               sceneRef,
+              elementsStackRef,
               editingArrowsRef,
               editingInteractorRef,
               isDraggingRef,
@@ -441,11 +454,16 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
               removeModal,
               addModal,
               deleteElement: (id: any) => deleteElementRef.current(id),
+              deleteElementsById: (ids: string[]) => deleteElementsById(ids),
+              pushHistory: (cmd: any) => pushHistoryRef.current(cmd),
               modalId: id,
               updateElementPosition,
-              animationContent: <AnimationForm lastIntersected={lastIntersected} />,
+              animationContent: <AnimationForm lastIntersected={lastIntersected} editingInteractorRef={editingInteractorRef} sceneRef={sceneRef} />,
               waitingForFirstInteractionRef,
               notify,
+              getGroupMembers,
+              temporarySelectionIds,
+              individualMode,
             })
           }
           handleMarkPosition={handleMarkPosition}
@@ -455,19 +473,102 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
           lastIntersected={lastIntersected}
           isMobile={isMobile}
           colorRef={colorRef}
+          onGroup={() => {
+            if (temporarySelectionIds.length >= 2) {
+              const group = groupElements(temporarySelectionIds);
+              pushHistoryRef.current({ type: 'GROUP_ELEMENTS', group, snapshot: [] });
+              notify?.('join', 'success');
+              if (temporarySelectionIdsRef) temporarySelectionIdsRef.current = [];
+              removeModal(id);
+            } else {
+              handleGroupingRef.current(
+                lastIntersected?.current?.userData?.particleId ??
+                lastIntersected?.current?.parent?.userData?.particleId ?? '',
+              );
+            }
+          }}
+          ungroupAll={ungroupAll}
+          ungroupSingle={ungroupSingle}
+          pushHistory={(cmd: any) => pushHistoryRef.current(cmd)}
+          notify={notify}
+          temporarySelectionIds={temporarySelectionIds}
+          individualMode={individualMode}
         />
       ),
       onClose: () => {
         editingInteractorRef.current.type = null;
         isDraggingRef.current = false;
         editingArrowsRef?.current?.remove();
+        if (temporarySelectionIdsRef) temporarySelectionIdsRef.current = [];
         removeModal(id);
       },
     });
-  }, [addModal, removeModal, editingModeManager, deleteElementRef, updateElementPosition,
-    lastIntersected, sceneRef, editingArrowsRef, editingInteractorRef, isDraggingRef,
+  }, [addModal, removeModal, editingModeManager, deleteElementRef, pushHistoryRef, updateElementPosition,
+    lastIntersected, sceneRef, elementsStackRef, editingArrowsRef, editingInteractorRef, isDraggingRef,
     rotationRef, originalColor, setEditingInteractorIsActive, isMobile, colorRef,
-    searchingPointRef, handleMarkPosition]);
+    searchingPointRef, handleMarkPosition, getGroupMembers, temporarySelectionIdsRef,
+    ungroupAll, ungroupSingle, notify, groupElements, deleteElementsById]);
+
+  // ── Agrupamento de elementos ──────────────────────────────────────────────
+
+  const [pendingGroupCount, setPendingGroupCount] = useState(0);
+  const pendingGroupCountSetterRef = useRef<React.Dispatch<React.SetStateAction<number>> | null>(null);
+
+  const handleGrouping = useCallback((initialElementId: string) => {
+    if (!initialElementId) return;
+    pendingGroupIdsRef.current = [initialElementId];
+    isGroupingModeActiveRef.current = true;
+    setPendingGroupCount(1);
+
+    const id = `modal-grouping-${Date.now()}`;
+
+    const GroupingModalContent = () => {
+      const [count, setCount] = React.useState(pendingGroupIdsRef.current.length);
+      pendingGroupCountSetterRef.current = setCount;
+      return (
+        <GroupingForm
+          count={count}
+          onFinalize={() => {
+            const group = groupElements(pendingGroupIdsRef.current);
+            pushHistoryRef.current({ type: 'GROUP_ELEMENTS', group, snapshot: [] });
+            notify('join', 'success');
+            isGroupingModeActiveRef.current = false;
+            pendingGroupIdsRef.current = [];
+            removeModal(id);
+          }}
+          onClose={() => {
+            isGroupingModeActiveRef.current = false;
+            pendingGroupIdsRef.current = [];
+            removeModal(id);
+          }}
+        />
+      );
+    };
+
+    addModal({
+      id,
+      isOpen: true,
+      title: 'Agrupar Elementos',
+      content: <GroupingModalContent />,
+      onClose: () => {
+        isGroupingModeActiveRef.current = false;
+        pendingGroupIdsRef.current = [];
+        removeModal(id);
+      },
+    });
+  }, [addModal, removeModal, groupElements, pushHistoryRef, notify,
+    pendingGroupIdsRef, isGroupingModeActiveRef]);
+
+  // Sincroniza a ref com a versão mais recente de handleGrouping
+  handleGroupingRef.current = handleGrouping;
+
+  // Expõe o setter de count para que handlers externos possam atualizar a contagem
+  const addToPendingGroup = useCallback((elementId: string) => {
+    if (!isGroupingModeActiveRef.current) return;
+    if (pendingGroupIdsRef.current.includes(elementId)) return;
+    pendingGroupIdsRef.current = [...pendingGroupIdsRef.current, elementId];
+    pendingGroupCountSetterRef.current?.(pendingGroupIdsRef.current.length);
+  }, [pendingGroupIdsRef, isGroupingModeActiveRef]);
 
   // ── Criatividade / Desenho livre ──────────────────────────────────────────
   // NOTA: handleCreativity é auto-referenciado em CreativityForm.
@@ -568,6 +669,8 @@ export function useModalHandlers(deps: UseModalHandlersDeps) {
     handleCalculator,
     handlePencil,
     handleEditing,
+    handleGrouping,
+    addToPendingGroup,
     handleCreativity,
     handleBlackBoard,
     handleUnitsSettings,

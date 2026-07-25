@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import css from './UILayer.module.scss';
 import Modal from '../../molecules/modal';
 import NotificationCenter from '../../molecules/notificationCenter';
 import PencilCursor from '../../atoms/pencilCursor';
@@ -37,6 +38,8 @@ export interface UILayerProps {
   /** Tutorial ativo no momento, null = nenhum */
   activeTutorial: string | null;
   onCloseTutorial: () => void;
+  /** Rect da box selection ativa, null = sem seleção ativa */
+  boxSelectorRect?: DOMRect | null;
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -63,6 +66,7 @@ export function UILayer({
   setEditingInteractorIsActive,
   activeTutorial,
   onCloseTutorial,
+  boxSelectorRect,
 }: UILayerProps) {
   const { isOwnCursorActive, modalIsOpenRef, openModalCount } = useUI();
   const { modalsList, addModal, removeModal } = useModal();
@@ -93,6 +97,9 @@ export function UILayer({
         isOpen: true,
         onClose: () => {
           modalOpenRef.current = false;
+          editingInteractorRef.current.active = false;
+          editingInteractorRef.current.type = '';
+          editingInteractorRef.current.targetIds = undefined;
           if (interactorType === 'reposition') {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (editingArrowsRef.current as any)?.highlightArrow?.(null);
@@ -115,6 +122,9 @@ export function UILayer({
     } else {
       if (!modalOpenRef.current) return;
       modalOpenRef.current = false;
+      editingInteractorRef.current.active = false;
+      editingInteractorRef.current.type = '';
+      editingInteractorRef.current.targetIds = undefined;
       removeModal(editingInteractorModalId);
     }
   }, [editingInteractorIsActive]);
@@ -163,6 +173,19 @@ export function UILayer({
       {/* Guia tutorial (onboarding) */}
       {activeTutorial && (
         <TutorialGuide type={activeTutorial} onClose={onCloseTutorial} />
+      )}
+
+      {/* Overlay de box selection */}
+      {boxSelectorRect && (
+        <div
+          className={css['box-selector']}
+          style={{
+            left: boxSelectorRect.left,
+            top: boxSelectorRect.top,
+            width: boxSelectorRect.width,
+            height: boxSelectorRect.height,
+          }}
+        />
       )}
     </>
   );

@@ -11,6 +11,7 @@ export interface Element {
   scale?: Vector3;
   rotation?: Vector3;
   position?: Vector3;
+  groupId?: string;
 }
 
 export interface RenderedTrace extends Omit<Element, 'size'> {

@@ -69,7 +69,7 @@ const EditingInteractor = ({
   };
 
   const { updateElementById } = useSketch();
-  const { needsRenderRef } = useScene();
+  const { needsRenderRef, sceneRef } = useScene();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -298,6 +298,17 @@ const EditingInteractor = ({
         lastIntersected.current.parent.rotation.y += deltaX * 0.01;
         lastIntersected.current.parent.rotation.x += deltaY * 0.01;
         needsRenderRef.current = true;
+
+        const targetIds = editingInteractorRef.current.targetIds;
+        if (targetIds && targetIds.length > 1 && sceneRef?.current) {
+          for (const id of targetIds.slice(1)) {
+            const obj = sceneRef.current.children.find((c: any) => c.userData?.particleId === id) as any;
+            if (obj) {
+              obj.rotation.y += deltaX * 0.01;
+              obj.rotation.x += deltaY * 0.01;
+            }
+          }
+        }
       }
 
       mouseStartPos.current = { x: mouseX, y: mouseY };
@@ -362,6 +373,17 @@ const EditingInteractor = ({
           lastIntersected.current.parent.rotation.y += deltaX * 0.01;
           lastIntersected.current.parent.rotation.x += deltaY * 0.01;
           needsRenderRef.current = true;
+
+          const targetIds = editingInteractorRef.current.targetIds;
+          if (targetIds && targetIds.length > 1 && sceneRef?.current) {
+            for (const id of targetIds.slice(1)) {
+              const obj = sceneRef.current.children.find((c: any) => c.userData?.particleId === id) as any;
+              if (obj) {
+                obj.rotation.y += deltaX * 0.01;
+                obj.rotation.x += deltaY * 0.01;
+              }
+            }
+          }
         }
 
         mouseStartPos.current = { x: touchX, y: touchY };
@@ -395,6 +417,27 @@ const EditingInteractor = ({
       }
       editingArrowsRef.current?.updatePosition(lastIntersected.current);
     }
+
+    const targetIds = editingInteractorRef.current.targetIds;
+    if (targetIds && targetIds.length > 1 && sceneRef?.current) {
+      for (const id of targetIds.slice(1)) {
+        const obj = sceneRef.current.children.find((c: any) => c.userData?.particleId === id) as any;
+        if (!obj) continue;
+        if (type === 'scale') {
+          for (const axis of selectedAxes) {
+            const next = obj.scale[axis] + dir * stepValue;
+            if (next > 0.1) obj.scale[axis] = next;
+          }
+        } else if (type === 'reposition') {
+          for (const dirKey of selectedDirections) {
+            const [ax, sign] = dirKey.split('_');
+            const multiplier = (sign === 'pos' ? 1 : -1) * dir;
+            obj.position[ax as 'x' | 'y' | 'z'] += multiplier * stepValue;
+          }
+        }
+      }
+    }
+
     needsRenderRef.current = true;
   };
 
@@ -420,27 +463,26 @@ const EditingInteractor = ({
     controlsRef.current.mouseDown = false;
 
     return () => {
-      if (lastIntersected.current?.parent) {
-        const particleId = lastIntersected.current.parent.userData.particleId as string;
-        const updatedElement = {
-          position: {
-            x: lastIntersected.current.parent.position.x,
-            y: lastIntersected.current.parent.position.y,
-            z: lastIntersected.current.parent.position.z,
-          },
-          rotation: {
-            x: lastIntersected.current.parent.rotation.x,
-            y: lastIntersected.current.parent.rotation.y,
-            z: lastIntersected.current.parent.rotation.z,
-          },
-          size: {
-            x: lastIntersected.current.parent.scale.x,
-            y: lastIntersected.current.parent.scale.y,
-            z: lastIntersected.current.parent.scale.z,
-          },
-        };
+      const saveObjectState = (obj: THREE.Object3D, id: string) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (updateElementById as any)(particleId, updatedElement);
+        (updateElementById as any)(id, {
+          position: { x: obj.position.x, y: obj.position.y, z: obj.position.z },
+          rotation: { x: obj.rotation.x, y: obj.rotation.y, z: obj.rotation.z },
+          size: { x: obj.scale.x, y: obj.scale.y, z: obj.scale.z },
+        });
+      };
+
+      if (lastIntersected.current?.parent) {
+        const primaryId = lastIntersected.current.parent.userData.particleId as string;
+        saveObjectState(lastIntersected.current.parent, primaryId);
+
+        const targetIds = editingInteractorRef.current.targetIds;
+        if (targetIds && targetIds.length > 1 && sceneRef?.current) {
+          for (const id of targetIds.slice(1)) {
+            const obj = sceneRef.current.children.find((c: any) => c.userData?.particleId === id);
+            if (obj) saveObjectState(obj, id);
+          }
+        }
       }
     };
   }, []);

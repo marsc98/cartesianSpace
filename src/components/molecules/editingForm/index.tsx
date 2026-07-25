@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import css from './index.module.scss';
 import Item from '../../atoms/item';
 import { colorToFilter } from '../../../utils/functions';
@@ -6,7 +6,6 @@ import {
   drawElementSelectionIndicator,
 } from '../../organisms/Board3d/spaceElements';
 import { useModal } from '../../../hooks/useModal';
-import AnimationForm from '../animationForm';
 
 function EditingForm(props) {
   const {
@@ -19,9 +18,47 @@ function EditingForm(props) {
     coordinates,
     editingInteractorRef,
     modalId,
+    onGroup,
+    ungroupAll,
+    ungroupSingle,
+    pushHistory,
+    notify,
+    temporarySelectionIds,
+    individualMode,
   } = props;
 
   const { addModal, removeModal } = useModal();
+
+  const desagruparClickRef = useRef(0);
+  const desagruparTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const groupId = lastIntersected?.current?.userData?.groupId
+    ?? lastIntersected?.current?.parent?.userData?.groupId;
+  const particleId = lastIntersected?.current?.userData?.particleId
+    ?? lastIntersected?.current?.parent?.userData?.particleId;
+
+  const handleDesagrupar = useCallback(() => {
+    desagruparClickRef.current += 1;
+    if (desagruparTimerRef.current) clearTimeout(desagruparTimerRef.current);
+
+    desagruparTimerRef.current = setTimeout(() => {
+      const clicks = desagruparClickRef.current;
+      desagruparClickRef.current = 0;
+
+      if (clicks >= 3 && particleId) {
+        ungroupSingle?.(particleId);
+        pushHistory?.({ type: 'UNGROUP_SINGLE', elementId: particleId, groupId });
+        notify?.('cut', 'neutral');
+      } else if (clicks === 2 && groupId) {
+        ungroupAll?.(groupId);
+        pushHistory?.({ type: 'UNGROUP_ALL', groupId });
+        notify?.('cut', 'warning');
+      }
+    }, 350);
+  }, [groupId, particleId, ungroupAll, ungroupSingle, pushHistory, notify]);
+
+  const showAgrupar = (temporarySelectionIds?.length ?? 0) >= 2 || !(temporarySelectionIds?.length);
+  const showDesagrupar = !!groupId && !individualMode;
 
   const options = [
     {
@@ -56,9 +93,22 @@ function EditingForm(props) {
       name: 'Animar',
       action: () => activateMode('animation'),
     },
+    ...(showAgrupar ? [{
+      id: 'join',
+      type: 'action',
+      name: 'Agrupar',
+      action: () => onGroup?.(),
+    }] : []),
+    ...(showDesagrupar ? [{
+      id: 'cut',
+      type: 'action',
+      name: 'Desagrupar',
+      action: handleDesagrupar,
+    }] : []),
   ];
 
   useEffect(() => {
+    if (!lastIntersected.current) return;
     const element = drawElementSelectionIndicator(
       lastIntersected.current,
       sceneRef,
@@ -72,8 +122,13 @@ function EditingForm(props) {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const selectionCount = temporarySelectionIds?.length ?? 0;
+
   return (
     <div className={css['editing-container']}>
+      {selectionCount >= 2 && (
+        <span className={css['selection-count']}>{selectionCount} elementos selecionados</span>
+      )}
       <div className={css['options-grid']} data-is-mobile={isMobile}>
         {options.map((option) => (
           <Item

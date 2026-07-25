@@ -24,6 +24,7 @@ export const useDrawEvents = ({
   commitTrace,
   pushHistory,
   elementsStackRef,
+  isGroupingModeActiveRef,
 }: any) => {
   // Pre-allocated vectors to avoid per-event GC pressure
   const workVec = useRef(new THREE.Vector3());
@@ -137,6 +138,7 @@ export const useDrawEvents = ({
 
   const handleDrawMouseDown = useCallback(
     (e: any) => {
+      if (isGroupingModeActiveRef?.current) return false;
       if (!drawingRef.current) return false;
 
       const sceneLengthStart = sceneRef?.current?.children?.length;

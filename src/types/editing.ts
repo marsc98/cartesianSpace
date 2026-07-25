@@ -19,6 +19,7 @@ export interface EditingInteractorState {
   initialX: number | null;
   initialY: number | null;
   type: 'scale' | 'rotation' | 'delete' | string;
+  targetIds?: string[];
 }
 
 export interface EditingModeContext {
@@ -40,10 +41,16 @@ export interface EditingModeContext {
   removeModal?: (id: string) => void;
   addModal?: (config: ModalConfig | ModalInstance) => void;
   deleteElement?: (id: string) => void;
+  deleteElementsById?: (ids: string[]) => void;
+  pushHistory?: (command: any) => void;
+  elementsStackRef?: React.MutableRefObject<Map<string, any>>;
   fixModal?: () => void;
   updateElementPosition?: (x: number, y: number, control: boolean) => void;
   waitingForFirstInteractionRef?: React.MutableRefObject<boolean>;
   notify?: (iconName: string, variant: string, options?: { duration?: number }) => void;
+  getGroupMembers?: (groupId: string) => import('./element').AnyElement[];
+  temporarySelectionIds?: string[];
+  individualMode?: boolean;
 }
 
 export interface EditingMode {

@@ -121,6 +121,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   // boardIsActive precisa ser state local — passado para CreativityForm via useModalHandlers
   const [boardIsActive, setBoardIsActive] = useState(false);
+  const [boxSelectorRect, setBoxSelectorRect] = useState<DOMRect | null>(null);
 
   // ── Refs de frame / navigator ─────────────────────────────────────────────
   const animationFrameRef = useRef<number | null>(null);
@@ -138,6 +139,8 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
   // Ref intermediária resolve a dependência circular sem quebrar regras de hooks.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const deleteElementRef = useRef<(particleId?: any) => void>(() => { });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pushHistoryRef = useRef<(command: any) => void>(() => { });
 
   // ── Efeitos ───────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -223,7 +226,8 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
     searchingPointRef.current = false;
     searchingFacesRef.current = false;
     setPencilIsActive(false);
-  }, [drawerRef, drawingRef, setIsDrawing, setElementsIsActive, writingRef, setIsOwnCursorActive, elementsRef, searchingPointRef, searchingFacesRef, setPencilIsActive]);
+    setEditingInteractorIsActive(false);
+  }, [drawerRef, drawingRef, setIsDrawing, setElementsIsActive, writingRef, setIsOwnCursorActive, elementsRef, searchingPointRef, searchingFacesRef, setPencilIsActive, setEditingInteractorIsActive]);
 
   const stopDragging = useCallback(() => {
     isDraggingRef.current = false;
@@ -273,6 +277,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
   const modalHandlers = useModalHandlers({
     editingModeManager,
     deleteElementRef,
+    pushHistoryRef,
     updateElementPosition: scene.updateElementPosition,
     setCameraPosition: scene.setCameraPosition,
     setActiveTutorial,
@@ -293,7 +298,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
   });
 
   // ── useUniverseEventListeners ─────────────────────────────────────────────
-  const { deleteElement, undo, redo } = useUniverseEventListeners({
+  const { deleteElement, pushHistory, undo, redo } = useUniverseEventListeners({
     handleCloseModal: modalHandlers.handleCloseModal,
     addTextToScene,
     isPointInsideCube: scene.isPointInsideCube,
@@ -330,14 +335,17 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
     setIsDrawing,
     setIsWriting,
     setEditingInteractorIsActive,
+    addToPendingGroup: modalHandlers.addToPendingGroup,
+    onBoxRect: setBoxSelectorRect,
   }, {
     accelActiveRef,
     accelQRef,
     addPanDelta,
   });
 
-  // Sincroniza deleteElementRef após cada render (sem useEffect — refs não são efeito colateral)
+  // Sincroniza refs circulares após cada render (sem useEffect — refs não são efeito colateral)
   deleteElementRef.current = deleteElement;
+  pushHistoryRef.current = pushHistory;
 
   // ── activeModalFormIds ────────────────────────────────────────────────────
   // Set de formIds ativos — dependência única e estável para os useMemos de helpers.
@@ -450,6 +458,7 @@ const YourWorld = ({ socketId }: YourWorldProps) => {
         setEditingInteractorIsActive={setEditingInteractorIsActive}
         activeTutorial={activeTutorial}
         onCloseTutorial={() => setActiveTutorial(null)}
+        boxSelectorRect={boxSelectorRect}
       />
 
       {/* Loader animado de eixos XYZ — visível durante inicialização da cena */}

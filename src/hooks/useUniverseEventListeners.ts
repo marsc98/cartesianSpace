@@ -22,6 +22,7 @@ import { useHistoryEvents } from './universeEventListeners/useHistoryEvents';
 import { useClipboardEvents } from './universeEventListeners/useClipboardEvents';
 import { useKeyboardEvents } from './universeEventListeners/useKeyboardEvents';
 import { useCameraEvents } from './universeEventListeners/useCameraEvents';
+import { useBoxSelectionEvents } from './universeEventListeners/useBoxSelectionEvents';
 import { useDrawEvents } from './universeEventListeners/useDrawEvents';
 import { useCreationEvents } from './universeEventListeners/useCreationEvents';
 import type { UniverseContext } from '../types/universe';
@@ -74,6 +75,8 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
     setIsDrawing,
     setIsWriting,
     setEditingInteractorIsActive,
+    addToPendingGroup,
+    onBoxRect,
   } = ctx;
   const {
     setLinePoints, awaitingSecondClick, setAwaitingSecondClick, linePoints,
@@ -91,7 +94,8 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
     elementsRef, searchingFacesRef, searchingPointRef, editingElementRef,
     isDraggingRef, editingInteractorRef, selectedTerrainRef, editingArrowsRef,
     waitingForFirstInteractionRef, lastIntersected,
-  } = useElements();
+    temporarySelectionIdsRef, isGroupingModeActiveRef,
+  } = useElements() as any;
 
   const { setIsOwnCursorActive, modalIsOpenRef } = useUI();
 
@@ -109,8 +113,13 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
   const { startCounter, stopCounter, resetCounter } = useSession();
   const { setWorldCoordinates } = useCoordinates();
 
-  const { addElement, queueElement, flushQueue, deleteElementsById, elements } =
-    useSketch();
+  const {
+    addElement, queueElement, flushQueue, deleteElementsById, elements,
+    updateMultipleElements, updateElementById, updateGroupsOnly, currentSketch,
+  } = useSketch();
+
+  const sketchGroupsRef = useRef<any[]>([]);
+  sketchGroupsRef.current = (currentSketch as any)?.groups ?? [];
 
   useEffect(() => {
     loadTraceWasm().catch(console.error);
@@ -181,9 +190,23 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
     handleCreativityOnSpace,
     needsRenderRef,
     setEditingInteractorIsActive,
+    updateMultipleElements,
+    updateElementById,
+    updateGroupsOnly,
+    sketchGroupsRef,
   });
 
   const { handleWheel, handleCameraDrag } = useCameraEvents(ctx, { controlsRef });
+
+  useBoxSelectionEvents({
+    sceneRef,
+    cameraRef,
+    rendererRef,
+    handleEditing,
+    temporarySelectionIdsRef,
+    lastIntersected,
+    onBoxRect: onBoxRect ?? (() => {}),
+  });
 
   const {
     handleDrawMouseMove: handleBoardMovement,
@@ -213,6 +236,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
     commitTrace,
     pushHistory,
     elementsStackRef,
+    isGroupingModeActiveRef,
   });
 
   /**
@@ -220,6 +244,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
    */
   const handleBoardClick = useCallback(
     (intersectionPoint: any, clientX: number, clientY: number) => {
+      if (isGroupingModeActiveRef?.current) return;
       if (!intersectionPoint && !elementsIsActive) return;
       if (drawerRef.current.active) return;
 
@@ -388,6 +413,7 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
       setIsResizingElement,
       setLinePoints,
       setElementsIsActive,
+      isGroupingModeActiveRef,
     ],
   );
 
@@ -412,6 +438,10 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
     },
     [rendererRef, mouseRef, raycasterRef, cameraRef, sceneRef, planeCubesRef, isPointInsideCube],
   );
+
+  // Triple-click detection — shared between mouse and touch handlers
+  const clickCountRef = useRef(0);
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /**
    * Handles actions when the mouse button is pressed down.
@@ -454,7 +484,9 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
 
       startCounter();
 
-      controls.mouseDown = true;
+      if (!editingInteractorRef.current.active) {
+        controls.mouseDown = true;
+      }
       handleDrawMouseDown(e);
 
       if (!drawingRef.current) {
@@ -514,30 +546,45 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
         );
       }
 
-      const now = new Date().getTime();
-      const isDoubleClick = now - controls.lastClickTime < 300;
-
-      if (isDoubleClick) {
-        const rect = rendererRef.current.domElement.getBoundingClientRect();
-
-        mouseRef.current.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-        mouseRef.current.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
+      // Grouping mode: add clicked element to pending group
+      if (isGroupingModeActiveRef?.current) {
+        const rect2 = rendererRef.current.domElement.getBoundingClientRect();
+        mouseRef.current.x = ((e.clientX - rect2.left) / rect2.width) * 2 - 1;
+        mouseRef.current.y = -((e.clientY - rect2.top) / rect2.height) * 2 + 1;
         raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
-        const intersects = raycasterRef.current.intersectObjects(
-          sceneRef.current.children,
-          true,
-        );
-
-        if (intersects.length > 0) {
-          const intersected = intersects[0].object;
-          lastIntersected.current = intersected;
-
-          handleEditing();
+        const gIntersects = raycasterRef.current.intersectObjects(sceneRef.current.children, true);
+        if (gIntersects.length > 0) {
+          const pid = gIntersects[0].object?.parent?.userData?.particleId
+            ?? gIntersects[0].object?.userData?.particleId;
+          if (pid) addToPendingGroup?.(pid);
         }
+        e.preventDefault();
+        return;
       }
-      controls.lastClickTime = now;
 
+      // Triple-click detection (replaces plain isDoubleClick)
+      const rect = rendererRef.current.domElement.getBoundingClientRect();
+      mouseRef.current.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouseRef.current.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
+      const clickIntersects = raycasterRef.current.intersectObjects(sceneRef.current.children, true);
+
+      if (clickIntersects.length > 0) {
+        clickCountRef.current += 1;
+        if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+
+        const intersected = clickIntersects[0].object;
+        lastIntersected.current = intersected;
+
+        clickTimerRef.current = setTimeout(() => {
+          const count = clickCountRef.current;
+          clickCountRef.current = 0;
+          if (count >= 3) handleEditing(true);
+          else if (count === 2) handleEditing(false);
+        }, 350);
+      }
+
+      controls.lastClickTime = new Date().getTime();
       e.preventDefault();
     },
     [
@@ -547,6 +594,8 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
       handleCloseModal,
       handleEditing,
       startCounter,
+      addToPendingGroup,
+      isGroupingModeActiveRef,
     ],
   );
 
@@ -700,13 +749,14 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
       const mouseX = e.clientX;
       const mouseY = e.clientY;
       if (editingInteractorRef.current.active) {
-        if (editingElementRef.current.type === 'copy') {
+        if (editingElementRef.current.type === 'copy' && lastIntersected.current) {
           lastIntersected.current.position.set(mouseX, mouseY, 0);
         }
 
         if (
           editingInteractorRef.current.initialX === null &&
-          editingInteractorRef.current.initialY === null
+          editingInteractorRef.current.initialY === null &&
+          lastIntersected.current
         ) {
           editingInteractorRef.current.initialX =
             lastIntersected.current.position.x;
@@ -762,7 +812,8 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
         controls.mouseDown &&
         !drawingRef.current &&
         !isDraggingRef.current &&
-        !searchingFacesRef.current
+        !searchingFacesRef.current &&
+        !editingInteractorRef.current.active
       ) {
         const deltaX = e.clientX - controls.lastX;
         const deltaY = e.clientY - controls.lastY;
@@ -957,7 +1008,8 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
         e.touches.length === 1 &&
         !drawingRef.current &&
         !elementsRef.current.active &&
-        !isDraggingRef.current
+        !isDraggingRef.current &&
+        !editingInteractorRef.current.active
       ) {
         const deltaX = touch.clientX - controls.lastX;
         const deltaY = touch.clientY - controls.lastY;
@@ -1036,7 +1088,9 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
 
         startCounter();
 
-        controls.mouseDown = true;
+        if (!editingInteractorRef.current.active) {
+          controls.mouseDown = true;
+        }
         controls.mouseMoving = false;
         controls.lastX = touch.clientX;
         controls.lastY = touch.clientY;
@@ -1123,27 +1177,37 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
           );
         }
 
-        const now = new Date().getTime();
-        const isDoubleClick = now - controls.lastClickTime < 300;
+        // Grouping mode: add clicked element to pending group
+        if (isGroupingModeActiveRef?.current) {
+          raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
+          const gIntersects = raycasterRef.current.intersectObjects(sceneRef.current.children, true);
+          if (gIntersects.length > 0) {
+            const pid = gIntersects[0].object?.parent?.userData?.particleId
+              ?? gIntersects[0].object?.userData?.particleId;
+            if (pid) addToPendingGroup?.(pid);
+          }
+        } else {
+          // Triple-click detection
+          raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
+          const clickIntersects = raycasterRef.current.intersectObjects(sceneRef.current.children, true);
 
-        if (isDoubleClick) {
-          raycasterRef.current.setFromCamera(
-            mouseRef.current,
-            cameraRef.current,
-          );
-          const intersects = raycasterRef.current.intersectObjects(
-            sceneRef.current.children,
-            true,
-          );
+          if (clickIntersects.length > 0) {
+            clickCountRef.current += 1;
+            if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
 
-          if (intersects.length > 0) {
-            const intersected = intersects[0].object;
+            const intersected = clickIntersects[0].object;
             lastIntersected.current = intersected;
-            handleEditing();
+
+            clickTimerRef.current = setTimeout(() => {
+              const count = clickCountRef.current;
+              clickCountRef.current = 0;
+              if (count >= 3) handleEditing(true);
+              else if (count === 2) handleEditing(false);
+            }, 350);
           }
         }
 
-        controls.lastClickTime = now;
+        controls.lastClickTime = new Date().getTime();
       } else if (e.touches.length === 2) {
         controls.touchStartDistance = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
@@ -1166,6 +1230,8 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
       handleEditing,
       startCounter,
       addCubeToCartesianSpace,
+      addToPendingGroup,
+      isGroupingModeActiveRef,
     ],
   );
 
@@ -1422,5 +1488,5 @@ export const useUniverseEventListeners = (ctx: UniverseContext, accelCtx?: Accel
     accumulateFromClient,
   ]);
 
-  return { deleteElement, undo, redo };
+  return { deleteElement, pushHistory, undo, redo };
 };

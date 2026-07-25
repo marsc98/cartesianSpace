@@ -7,7 +7,7 @@ export interface UniverseContext {
   addTextToScene: (scene: THREE.Scene, elementData: ElementData, drawingStarted?: boolean) => THREE.Group;
   isPointInsideCube: (point: THREE.Vector3, cubePoint: THREE.Vector3) => boolean;
   addCubeToCartesianSpace: (e: any, mouseRef: any, cameraRef: any, sceneRef: any, raycasterRef: any, planeCubesRef: any) => void;
-  handleEditing: () => void;
+  handleEditing: (individualMode?: boolean) => void;
   handleCreativityOnSpace: (data: any, sceneRef: any, elementsStackRef: any, cartesianSpaceRef: any, addElement: any, skipHistory: boolean, pushHistory: any) => any;
   identifyFace: (e: any, scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => void;
   moveCamera: (direction: 'left' | 'right' | 'up' | 'down' | 'forward' | 'backward', amount?: number) => void;
@@ -39,4 +39,6 @@ export interface UniverseContext {
   setIsDrawing: React.Dispatch<React.SetStateAction<boolean>>;
   setIsWriting: React.Dispatch<React.SetStateAction<boolean>>;
   setEditingInteractorIsActive: (active: boolean) => void;
+  addToPendingGroup?: (elementId: string) => void;
+  onBoxRect?: (rect: DOMRect | null) => void;
 }

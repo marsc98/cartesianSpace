@@ -10,7 +10,7 @@ export type IconName =
   | 'stop' | 'ruler' | 'resize' | 'colapse' | 'expand' | 'pin' | 'markers'
   | 'movePhone' | 'palette' | 'crossword' | 'locked' | 'unlocked' | 'fullscreen'
   | 'fullscreenExit' | 'keep' | 'keepOff' | 'blackBoard' | 'calculator'
-  | 'backspace' | 'dragHand' | 'coolArrow' | 'axis2' | 'infoOnInfo' | 'undo' | 'redo' | 'edit' | 'logo';
+  | 'backspace' | 'dragHand' | 'coolArrow' | 'axis2' | 'infoOnInfo' | 'undo' | 'redo' | 'edit' | 'logo' | 'join' | 'cut';
 
 interface IconProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'name'> {
   name: IconName;
@@ -199,6 +199,12 @@ function Icon(props: IconProps) {
       break;
     case 'logo':
       src = '/images/icons/logo.ico';
+      break;
+    case 'join':
+      src = '/images/icons/join.svg';
+      break;
+    case 'cut':
+      src = '/images/icons/cut.svg';
       break;
     default:
       src = '';

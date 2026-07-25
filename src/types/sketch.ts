@@ -7,8 +7,14 @@ export interface SketchMeta {
   updatedAt: string;
 }
 
+export interface ElementGroup {
+  id: string;
+  memberIds: string[];
+}
+
 export interface Sketch extends SketchMeta {
   data: Element[];
+  groups?: ElementGroup[];
 }
 
 export interface SketchSummary extends SketchMeta {

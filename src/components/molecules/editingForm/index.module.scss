@@ -14,6 +14,12 @@
   }
 }
 
+.selection-count {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.02em;
+}
+
 .options-grid {
   display: grid;
   grid-template-columns: repeat(4, auto);

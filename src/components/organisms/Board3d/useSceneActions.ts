@@ -24,7 +24,7 @@ export interface UseSceneActionsDeps {
 export function useSceneActions({ setRulerIsActive, rulerIsActive }: UseSceneActionsDeps) {
   const { sceneRef, rendererRef, elementsStackRef, needsRenderRef } = useScene();
   const { cameraRef, raycasterRef, mouseRef, speedRefectorRef, keysHeldRef } = useCamera();
-  const { editingArrowsRef, lastIntersected, originalColor } = useElements();
+  const { editingArrowsRef, lastIntersected, originalColor, editingInteractorRef } = useElements();
   const { colorRef, rulerRef } = useDrawing();
   const { isMobile } = useSession();
 
@@ -224,6 +224,9 @@ export function useSceneActions({ setRulerIsActive, rulerIsActive }: UseSceneAct
       y -= y * 0.0008;
       raycasterRef.current.setFromCamera({ x, y }, cameraRef.current);
       const objPos = (lastIntersected.current as any).parent.position;
+      const prevX = objPos.x;
+      const prevY = objPos.y;
+      const prevZ = objPos.z;
       const plane = ctrl ? planeXY : planeXZ;
       plane.constant = ctrl ? -objPos.z : -objPos.y;
       if (raycasterRef.current.ray.intersectPlane(plane, intersectionPoint)) {
@@ -231,9 +234,24 @@ export function useSceneActions({ setRulerIsActive, rulerIsActive }: UseSceneAct
           ? objPos.set(intersectionPoint.x, intersectionPoint.y, objPos.z)
           : objPos.set(intersectionPoint.x, objPos.y, intersectionPoint.z);
         editingArrowsRef.current?.updatePosition(lastIntersected.current);
+
+        const targetIds = editingInteractorRef.current.targetIds;
+        if (targetIds && targetIds.length > 1 && sceneRef.current) {
+          const dx = objPos.x - prevX;
+          const dy = objPos.y - prevY;
+          const dz = objPos.z - prevZ;
+          for (const id of targetIds.slice(1)) {
+            const obj = sceneRef.current.children.find((c: any) => c.userData?.particleId === id) as any;
+            if (obj) {
+              obj.position.x += dx;
+              obj.position.y += dy;
+              obj.position.z += dz;
+            }
+          }
+        }
       }
     },
-    [rendererRef, cameraRef, raycasterRef, lastIntersected, planeXZ, planeXY, intersectionPoint, editingArrowsRef],
+    [rendererRef, cameraRef, raycasterRef, lastIntersected, planeXZ, planeXY, intersectionPoint, editingArrowsRef, editingInteractorRef, sceneRef],
   );
 
   // ── Element interaction ───────────────────────────────────────────────────

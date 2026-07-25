@@ -7,9 +7,12 @@ import { useModal } from '../../../hooks/useModal';
 import { evaluate as mathEvaluate } from 'mathjs';
 import Calculator from '../calculator';
 import type * as THREE from 'three';
+import type { EditingInteractorState } from '../../../types';
 
 interface AnimationFormProps {
   lastIntersected: React.MutableRefObject<THREE.Mesh | null>;
+  editingInteractorRef?: React.MutableRefObject<EditingInteractorState>;
+  sceneRef?: React.MutableRefObject<THREE.Scene>;
 }
 
 interface AxisEquations {
@@ -37,7 +40,7 @@ const safeEvaluate = (expr: string, scope: Record<string, number>): number | nul
   }
 };
 
-export default function AnimationForm({ lastIntersected }: AnimationFormProps) {
+export default function AnimationForm({ lastIntersected, editingInteractorRef, sceneRef }: AnimationFormProps) {
   const [velocity, setVelocity] = useState(5);
   const [distance, setDistance] = useState(15);
   const [activeMovement, setActiveMovement] = useState<string | null>(null);
@@ -153,6 +156,18 @@ export default function AnimationForm({ lastIntersected }: AnimationFormProps) {
         lastIntersected.current.parent.position.x += resX;
         lastIntersected.current.parent.position.y += resY;
         lastIntersected.current.parent.position.z += resZ;
+
+        const targetIds = editingInteractorRef?.current?.targetIds;
+        if (targetIds && targetIds.length > 1 && sceneRef?.current) {
+          for (const id of targetIds.slice(1)) {
+            const obj = sceneRef.current.children.find((c: any) => c.userData?.particleId === id) as any;
+            if (obj) {
+              obj.position.x += resX;
+              obj.position.y += resY;
+              obj.position.z += resZ;
+            }
+          }
+        }
       }
 
       const delay = Math.max(10, 1000 / velocity);

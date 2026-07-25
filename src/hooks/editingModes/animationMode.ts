@@ -1,4 +1,5 @@
 import type { EditingMode } from '../../types/editing';
+import { getTargetIds } from './getTargetIds';
 
 export const animationMode: EditingMode = {
   id: 'animation',
@@ -8,6 +9,7 @@ export const animationMode: EditingMode = {
 
     editingInteractorRef.current.active = true;
     editingInteractorRef.current.type = 'animation';
+    editingInteractorRef.current.targetIds = getTargetIds(ctx);
 
     if (addModal && animationContent) {
       const id = `modal-animation-${Date.now()}`;

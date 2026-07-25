@@ -31,6 +31,9 @@ interface ElementsContextValue {
   selectedTerrainRef: React.MutableRefObject<THREE.Mesh | null>;
   searchingPointRef: React.MutableRefObject<boolean>;
   markersRef: React.MutableRefObject<Marker[]>;
+  temporarySelectionIdsRef: React.MutableRefObject<string[]>;
+  pendingGroupIdsRef: React.MutableRefObject<string[]>;
+  isGroupingModeActiveRef: React.MutableRefObject<boolean>;
 }
 
 const ElementsContext = createContext<ElementsContextValue | null>(null);
@@ -65,6 +68,9 @@ export const ElementsProvider = ({ children }: { children: React.ReactNode }) =>
     name: 'Ponto Inicial',
     position: { x: 0, y: 0, z: 0 },
   }]);
+  const temporarySelectionIdsRef = useRef<string[]>([]);
+  const pendingGroupIdsRef = useRef<string[]>([]);
+  const isGroupingModeActiveRef = useRef(false);
 
   const contextValue = useMemo(() => ({
     elementsIsActive, setElementsIsActive,
@@ -73,6 +79,7 @@ export const ElementsProvider = ({ children }: { children: React.ReactNode }) =>
     editingArrowsRef, isDraggingRef, waitingForFirstInteractionRef, lastIntersected,
     originalColor, searchingFacesRef, selectedTerrainRef,
     searchingPointRef, markersRef,
+    temporarySelectionIdsRef, pendingGroupIdsRef, isGroupingModeActiveRef,
   // setters and refs are stable
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [elementsIsActive, isResizingElement]);

@@ -30,11 +30,13 @@ export const useCreationEvents = (
     linePoints,
     axisRef,
     controlsRef,
+    isGroupingModeActiveRef,
   }: any
 ) => {
 
   const handleBoardClick = useCallback(
     (intersectionPoint: any, clientX: number, clientY: number) => {
+      if (isGroupingModeActiveRef?.current) return;
       if (!intersectionPoint && !elementsIsActive) return;
       if (drawerRef.current.active) return;
 
@@ -274,6 +276,7 @@ export const useCreationEvents = (
       axisRef,
       controlsRef,
       lineBetweenPointsRef,
+      isGroupingModeActiveRef,
     ],
   );
 
