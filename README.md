@@ -1,10 +1,10 @@
 # Espaço Cartesiano
 
-Quadro branco tridimensional interativo desenvolvido como Trabalho de Conclusão de Curso (TCC). A aplicação permite criar apresentações e visualizações matemáticas em um espaço 3D navegável — com ferramentas de desenho à mão livre, plotagem de funções matemáticas, animações, e colaboração em tempo real via dispositivo móvel.
-
-O projeto nasceu como um quadro branco 2D simples e evoluiu para um ambiente de apresentação 3D completo, explorando renderização em tempo real, processamento de alto desempenho com WebAssembly e comunicação bidirecional via WebSocket.
+O Espaço Cartesiano nasceu na busca por um projeto de conclusão de curso. Um dia conversando com minha namorada ela comentou sobre como "desenhava no ar" para pensar, essa frase virou um insight que me levou a querer fazer um "quadro branco" para desenhar e fazer demonstrações, para aproximar a matemática comecei a estudar animações através dos vídeos do canal Chris Courses e comecei a buscar mais formas de mostrar a matemática de várias maneiras na mesma plataforma, mas sem deixar nítido como um passo a passo e sim permitir ao usuário de fato "visualizar" a matemática e caso se interesse veja os cálculos utilizados para movimento, rotação, o desenho em si... O Espaço Cartesiano se tornou um "quadro 3D" interativo. A aplicação permite ao usuário realizar demonstrações de funções, plot de geometrias, desenho à mão livre, animações nos items do espaço.
 
 **Acesse:** [espaco-cartesiano.com.br](https://espaco-cartesiano.com.br)
+
+🇧🇷 Português | [🇺🇸 English](README.en.md)
 
 ---
 
@@ -30,25 +30,23 @@ yarn deploy      # faz o deploy na Azion + upload manual do arquivo WASM no stor
 
 ### Parâmetros de URL
 
-| Parâmetro | Descrição |
-|-----------|-----------|
-| *(nenhum)* | Abre o board 3D padrão |
-| `?board=true` | Abre o board 2D legado |
-| `?bid=<id>` | Abre o board 3D conectado a uma sessão colaborativa via WebSocket |
+| Parâmetro     | Descrição                |
+| ------------- | ------------------------- |
+| _(nenhum)_    | Abre o board 3D padrão   |
+| `?board=true` | Abre o board 2D legado   |
 
 ---
 
 ## Stack
 
-| Camada | Tecnologia |
-|--------|-----------|
-| Framework | React 19 + Vite |
-| Renderização 3D | Three.js |
-| Performance | WebAssembly (Rust → `.wasm`) |
-| Colaboração | WebSocket (protocolo binário) |
-| Matemática | mathjs |
-| Estilização | CSS Modules (SCSS) |
-| Deploy | Azion Edge (CDN + Edge Storage) |
+| Camada          | Tecnologia                      |
+| --------------- | ------------------------------- |
+| Framework       | React 19 + Vite                 |
+| Renderização 3D | Three.js                        |
+| Performance     | WebAssembly (Rust → `.wasm`)    |
+| Matemática      | mathjs                          |
+| Estilização     | CSS Modules (SCSS)              |
+| Deploy          | Azion Edge (CDN + Edge Storage) |
 
 ---
 
@@ -57,37 +55,37 @@ yarn deploy      # faz o deploy na Azion + upload manual do arquivo WASM no stor
 ### Visão geral
 
 ```
-Entrada do usuário (mouse / touch / WebSocket)
+Entrada do usuário (mouse / touch)
         │
         ▼
-  React + Contexts  ←──────────────────────────────────────────────┐
-        │                                                           │
-        ▼                                                           │
-  Drawing Pipeline                                          SessionContext
-   ┌────────────┐    ┌─────────────────┐    ┌────────────┐        │
-   │ Raw Coords │───▶│  WASM Optimizer │───▶│  Three.js  │        │
-   │ (Float32)  │    │ (RDP + cilindro)│    │  Renderer  │        │
-   └────────────┘    └─────────────────┘    └────────────┘        │
-                                                   │               │
-                                                   ▼               │
-                                             Scene (Three.js)      │
-                                           elementsStackRef ───────┘
+  React + Contexts
+        │
+        ▼
+  Drawing Pipeline
+   ┌────────────┐    ┌─────────────────┐    ┌────────────┐
+   │ Raw Coords │───▶│  WASM Optimizer │───▶│  Three.js  │
+   │ (Float32)  │    │ (RDP + cilindro)│    │  Renderer  │
+   └────────────┘    └─────────────────┘    └────────────┘
+                                                   │
+                                                   ▼
+                                             Scene (Three.js)
+                                           elementsStackRef
 ```
 
 ### React + Contexts
 
 O estado da aplicação é distribuído em **8 contextos independentes**, montados em `AppProviders`:
 
-| Context | Responsabilidade |
-|---------|-----------------|
-| `SessionContext` | Dados de sessão: cor atual, device mobile, contador de tempo |
-| `SceneContext` | Refs do Three.js: cena, renderer, pilha de elementos |
-| `UIContext` | Estado da interface: modal aberto, modo de edição ativo |
-| `DrawingContext` | Estado do traço em progresso |
-| `ElementsContext` | CRUD dos elementos presentes na cena |
-| `HistoryContext` | Undo/redo |
-| `CameraContext` | Posição e comportamento da câmera |
-| `FunctionsContext` | Funções matemáticas plotadas |
+| Context            | Responsabilidade                                             |
+| ------------------ | ------------------------------------------------------------ |
+| `SessionContext`   | Dados de sessão: cor atual, device mobile, contador de tempo |
+| `SceneContext`     | Refs do Three.js: cena, renderer, pilha de elementos         |
+| `UIContext`        | Estado da interface: modal aberto, modo de edição ativo      |
+| `DrawingContext`   | Estado do traço em progresso                                 |
+| `ElementsContext`  | CRUD dos elementos presentes na cena                         |
+| `HistoryContext`   | Undo/redo                                                    |
+| `CameraContext`    | Posição e comportamento da câmera                            |
+| `FunctionsContext` | Funções matemáticas plotadas                                 |
 
 Nenhum estado global externo (Redux, Zustand) — os contextos são suficientes para o escopo do projeto e mantêm o acoplamento baixo.
 
@@ -115,20 +113,6 @@ O módulo WASM (`trace_opt.wasm`) executa duas operações em Rust:
 2. **Geração de cilindro:** para cada segmento simplificado, gera anéis de vértices ao redor da direção do traço (`nRing` vértices por anel, com raio proporcional ao tamanho do pincel). O resultado são as posições 3D de um sistema de partículas que forma o traço renderizado.
 
 A comunicação com o WASM usa **memória compartilhada** diretamente: os coords de entrada são escritos no buffer exportado pelo módulo (`input_ptr`), a função é chamada, e as posições de saída são lidas do buffer de saída (`output_ptr`) sem nenhuma cópia extra entre JS e WASM.
-
-### Colaboração via WebSocket
-
-O parâmetro `?bid=<id>` conecta o browser a um servidor WebSocket. O protocolo é **binário puro** (não JSON): cada mensagem tem 16 bytes fixos.
-
-```
-Offset  Tipo    Campo
-0       int32   sessionId
-4       int32   x
-8       int32   y
-12      int32   z
-```
-
-Isso minimiza o overhead de serialização e é especialmente relevante para o caso de uso de controle via celular, onde cada movimento do dispositivo gera dezenas de mensagens por segundo.
 
 ### Deploy na Azion
 
