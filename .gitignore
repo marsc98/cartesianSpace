@@ -2,6 +2,7 @@
 node_modules/
 .pnp*
 .yarn/install-state.gz
+.yarn/unplugged/
 
 # build
 dist/
@@ -29,6 +30,7 @@ public/wasm/
 
 # docs (interno)
 docs/
+review-issues.md
 
 # misc
 .DS_Store
